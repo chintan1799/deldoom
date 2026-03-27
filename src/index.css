@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  html {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    height: 100%;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* Wikipedia article content styles */
+.wiki-content {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #3f3f46;
+}
+
+.wiki-content h1,
+.wiki-content h2,
+.wiki-content h3,
+.wiki-content h4 {
+  font-weight: 800;
+  color: #18181b;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.wiki-content h1 { font-size: 1.5rem; }
+.wiki-content h2 { font-size: 1.25rem; border-bottom: 1px solid #e4e4e7; padding-bottom: 0.4rem; }
+.wiki-content h3 { font-size: 1.05rem; }
+
+.wiki-content p {
+  margin-bottom: 1rem;
+}
+
+.wiki-content img {
+  border-radius: 0.75rem;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  display: block;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.wiki-content .wiki-link {
+  color: #6366f1;
+  font-weight: 500;
+  cursor: default;
+}
+
+.wiki-content ul,
+.wiki-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.wiki-content li {
+  margin-bottom: 0.25rem;
+}
+
+.wiki-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  display: block;
+}
+
+.wiki-content th,
+.wiki-content td {
+  border: 1px solid #e4e4e7;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.wiki-content th {
+  background: #f4f4f5;
+  font-weight: 700;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .wiki-content {
+    color: #a1a1aa;
+  }
+
+  .wiki-content h1,
+  .wiki-content h2,
+  .wiki-content h3,
+  .wiki-content h4 {
+    color: #fafafa;
+  }
+
+  .wiki-content h2 {
+    border-bottom-color: #3f3f46;
+  }
+
+  .wiki-content .wiki-link {
+    color: #818cf8;
+  }
+
+  .wiki-content th {
+    background: #27272a;
+  }
+
+  .wiki-content th,
+  .wiki-content td {
+    border-color: #3f3f46;
+  }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 0; }
