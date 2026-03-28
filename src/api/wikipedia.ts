@@ -176,6 +176,15 @@ export function sanitizeWikiHtml(html: string): string {
   ];
   remove.forEach((sel) => doc.querySelectorAll(sel).forEach((el) => el.remove()));
 
+  // Strip boilerplate sections by heading text
+  const STRIP_SECTIONS = ['See also', 'Notes', 'References', 'Bibliography', 'Further reading', 'External links'];
+  doc.querySelectorAll('section').forEach((section) => {
+    const heading = section.querySelector('h2, h3');
+    if (heading && STRIP_SECTIONS.includes(heading.textContent?.trim() ?? '')) {
+      section.remove();
+    }
+  });
+
   // Convert links to tappable spans — preserve the target title
   doc.querySelectorAll('a[href]').forEach((a) => {
     const href = a.getAttribute('href') ?? '';

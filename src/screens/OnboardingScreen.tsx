@@ -104,9 +104,13 @@ export function OnboardingScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed"
+                className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed text-left max-w-xs"
               >
-                deldoom rolls you a random article from Wikipedia—tailored to what you actually care about. One roll, one idea, endless curiosity.
+                <span className="font-black italic text-navy-900 dark:text-white">deldoom</span>
+                {'  '}
+                <span className="text-slate-400 text-sm not-italic">/ del·doom /  verb</span>
+                <br /><br />
+                "the activity of gradually deleting doomscrolling from your life and taking control of your time, one nano-learning dice roll at a time. One roll. One idea. One goal: Pursuit of Knowledge."
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

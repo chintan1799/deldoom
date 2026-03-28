@@ -137,27 +137,8 @@ export function ArticleScreen() {
         )}
       </div>
 
-      {/* Bottom bar */}
-      {!loading && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="px-4 py-4 border-t border-slate-100 dark:border-navy-800 bg-white/95 dark:bg-navy-950/95 backdrop-blur-xl shrink-0"
-        >
-          <a
-            href={wikiUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors"
-          >
-            Open full article in Wikipedia
-            <ExternalLink size={13} />
-          </a>
-        </motion.div>
-      )}
 
-      <WikiTermPopup wikiTitle={popupTitle} onClose={() => setPopupTitle(null)} />
+<WikiTermPopup wikiTitle={popupTitle} onClose={() => setPopupTitle(null)} />
     </motion.div>
   );
 }
