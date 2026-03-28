@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ArrowLeft, Dices } from 'lucide-react';
 import { INTERESTS, INTEREST_GROUPS } from '../data/interests';
 import { Tag } from '../components/ui/Tag';
 import { Button } from '../components/ui/Button';
@@ -57,12 +58,14 @@ export function OnboardingScreen() {
   const canProceed = selectedInterests.length >= MIN_INTERESTS;
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white dark:bg-navy-950 flex flex-col overflow-hidden">
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-12 pb-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🎲</span>
-          <span className="font-black text-xl text-zinc-900 dark:text-white tracking-tight">deldoom</span>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-navy-900 dark:bg-white flex items-center justify-center">
+            <Dices size={16} className="text-white dark:text-navy-900" strokeWidth={1.8} />
+          </div>
+          <span className="font-black text-xl text-navy-900 dark:text-white tracking-tight">deldoom</span>
         </div>
         <ProgressDots total={STEPS} current={step} />
       </div>
@@ -85,15 +88,15 @@ export function OnboardingScreen() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 20 }}
-                className="text-8xl mb-8"
+                className="w-24 h-24 rounded-[28px] bg-navy-900 dark:bg-white flex items-center justify-center mb-8 shadow-2xl"
               >
-                👋
+                <Dices size={44} className="text-white dark:text-navy-900" strokeWidth={1.5} />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-3xl font-black text-zinc-900 dark:text-white mb-4 leading-tight"
+                className="text-3xl font-black text-navy-900 dark:text-white mb-4 leading-tight"
               >
                 Turn scrolling into learning
               </motion.h1>
@@ -101,7 +104,7 @@ export function OnboardingScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-zinc-500 dark:text-zinc-400 text-lg mb-10 leading-relaxed"
+                className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed"
               >
                 deldoom rolls you a random article from Wikipedia—tailored to what you actually care about. One roll, one idea, endless curiosity.
               </motion.p>
@@ -131,10 +134,10 @@ export function OnboardingScreen() {
             >
               {/* Header */}
               <div className="px-6 pt-2 pb-3 shrink-0">
-                <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-1">
+                <h2 className="text-2xl font-black text-navy-900 dark:text-white mb-1">
                   What sparks your curiosity?
                 </h2>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
                   Pick at least {MIN_INTERESTS}. We'll roll content just for you.
                 </p>
               </div>
@@ -142,13 +145,13 @@ export function OnboardingScreen() {
               {/* Search bar */}
               <div className="px-6 pb-3 shrink-0">
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">🔍</span>
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" strokeWidth={2} />
                   <input
                     type="text"
                     placeholder="Search interests..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-navy-800 rounded-xl text-sm text-navy-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-navy-900/20 dark:focus:ring-white/10 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -159,10 +162,10 @@ export function OnboardingScreen() {
                   <div className="flex gap-2 w-max">
                     <button
                       onClick={() => setActiveGroup(null)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors min-h-[36px] ${
                         !activeGroup
-                          ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                          : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                          ? 'bg-navy-900 text-white dark:bg-white dark:text-navy-900'
+                          : 'bg-slate-100 text-slate-600 dark:bg-navy-800 dark:text-slate-400'
                       }`}
                     >
                       All
@@ -171,10 +174,10 @@ export function OnboardingScreen() {
                       <button
                         key={group}
                         onClick={() => setActiveGroup(activeGroup === group ? null : group)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                        className={`px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors min-h-[36px] ${
                           activeGroup === group
-                            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                            ? 'bg-navy-900 text-white dark:bg-white dark:text-navy-900'
+                            : 'bg-slate-100 text-slate-600 dark:bg-navy-800 dark:text-slate-400'
                         }`}
                       >
                         {group}
@@ -186,9 +189,7 @@ export function OnboardingScreen() {
 
               {/* Interest grid */}
               <div className="flex-1 overflow-y-auto px-6 pb-36">
-                <motion.div
-                  className="flex flex-wrap gap-2.5 py-1"
-                >
+                <motion.div className="flex flex-wrap gap-2.5 py-1">
                   <AnimatePresence mode="popLayout">
                     {filteredInterests.map((interest, i) => (
                       <motion.div
@@ -215,10 +216,13 @@ export function OnboardingScreen() {
                 </motion.div>
               </div>
 
-              {/* Bottom CTA */}
-              <div className="fixed bottom-0 left-0 right-0 px-6 py-5 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-800">
+              {/* Bottom CTA — sticky, respects safe area */}
+              <div
+                className="sticky bottom-0 left-0 right-0 px-6 py-5 bg-white/95 dark:bg-navy-950/95 backdrop-blur-xl border-t border-slate-100 dark:border-navy-800"
+                style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
                     {selectedInterests.length === 0
                       ? `Pick at least ${MIN_INTERESTS}`
                       : `${selectedInterests.length} selected`}
@@ -227,10 +231,9 @@ export function OnboardingScreen() {
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="text-sm font-semibold"
-                      style={{ color: canProceed ? '#16a34a' : '#f59e0b' }}
+                      className={`text-sm font-semibold ${canProceed ? 'text-navy-900 dark:text-white' : 'text-slate-400'}`}
                     >
-                      {canProceed ? '✓ Ready!' : `${MIN_INTERESTS - selectedInterests.length} more to go`}
+                      {canProceed ? 'Ready!' : `${MIN_INTERESTS - selectedInterests.length} more to go`}
                     </motion.span>
                   )}
                 </div>
@@ -256,15 +259,15 @@ export function OnboardingScreen() {
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-                className="text-8xl mb-8"
+                className="w-24 h-24 rounded-[28px] bg-navy-900 dark:bg-white flex items-center justify-center mb-8 shadow-2xl"
               >
-                🎉
+                <Dices size={44} className="text-white dark:text-navy-900" strokeWidth={1.5} />
               </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-3xl font-black text-zinc-900 dark:text-white mb-4"
+                className="text-3xl font-black text-navy-900 dark:text-white mb-4"
               >
                 You're all set!
               </motion.h2>
@@ -272,9 +275,11 @@ export function OnboardingScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-zinc-500 dark:text-zinc-400 text-lg mb-4 leading-relaxed"
+                className="text-slate-500 dark:text-slate-400 text-base mb-4 leading-relaxed"
               >
-                We'll roll articles from your <strong className="text-zinc-900 dark:text-white">{selectedInterests.length} topics</strong>. The more you explore, the better it gets.
+                We'll roll articles from your{' '}
+                <strong className="text-navy-900 dark:text-white">{selectedInterests.length} topics</strong>.
+                The more you explore, the better it gets.
               </motion.p>
 
               {/* Selected interests preview */}
@@ -287,12 +292,10 @@ export function OnboardingScreen() {
                 {selectedInterests.slice(0, 8).map((id) => {
                   const interest = INTERESTS.find((i) => i.id === id);
                   if (!interest) return null;
-                  return (
-                    <Tag key={id} interest={interest} selected size="sm" />
-                  );
+                  return <Tag key={id} interest={interest} selected size="sm" />;
                 })}
                 {selectedInterests.length > 8 && (
-                  <span className="inline-flex items-center px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-2xl text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                  <span className="inline-flex items-center px-3 py-1.5 bg-slate-100 dark:bg-navy-800 rounded-2xl text-xs text-slate-500 dark:text-slate-400 font-medium">
                     +{selectedInterests.length - 8} more
                   </span>
                 )}
@@ -305,7 +308,7 @@ export function OnboardingScreen() {
                 className="w-full max-w-xs"
               >
                 <Button onClick={handleFinish} size="lg" fullWidth>
-                  Start Learning 🎲
+                  Start Learning →
                 </Button>
               </motion.div>
               <motion.button
@@ -313,9 +316,9 @@ export function OnboardingScreen() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
                 onClick={() => go(1)}
-                className="mt-4 text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                className="mt-4 flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors min-h-[44px] px-3"
               >
-                ← Edit interests
+                <ArrowLeft size={14} /> Edit interests
               </motion.button>
             </motion.div>
           )}

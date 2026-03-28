@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowLeft, Bookmark, BookmarkCheck, ExternalLink, Dices } from 'lucide-react';
 import { fetchArticleHtml, sanitizeWikiHtml } from '../api/wikipedia';
 import { useAppStore } from '../store/useAppStore';
+import { WikiTermPopup } from '../components/WikiTermPopup';
+import { ResourcePanel } from '../components/ResourcePanel';
 
 export function ArticleScreen() {
   const { wikiTitle } = useParams<{ wikiTitle: string }>();
@@ -12,6 +15,8 @@ export function ArticleScreen() {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [popupTitle, setPopupTitle] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const decodedTitle = decodeURIComponent(wikiTitle ?? '');
   const article = savedArticles.find((a) => a.wikiTitle === decodedTitle);
@@ -21,16 +26,28 @@ export function ArticleScreen() {
     if (!decodedTitle) return;
     setLoading(true);
     setError(null);
+    setHtml(null);
 
     fetchArticleHtml(decodedTitle)
-      .then((raw) => {
-        setHtml(sanitizeWikiHtml(raw));
-      })
-      .catch((err) => {
-        setError(err.message);
-      })
+      .then((raw) => setHtml(sanitizeWikiHtml(raw)))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [decodedTitle]);
+
+  // Event delegation for wiki-link taps
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    function handleClick(e: MouseEvent) {
+      const target = (e.target as HTMLElement).closest('[data-wiki-title]') as HTMLElement | null;
+      if (target?.dataset.wikiTitle) {
+        e.preventDefault();
+        setPopupTitle(target.dataset.wikiTitle);
+      }
+    }
+    el.addEventListener('click', handleClick);
+    return () => el.removeEventListener('click', handleClick);
+  }, [html]);
 
   function toggleSave() {
     if (saved) {
@@ -48,70 +65,75 @@ export function ArticleScreen() {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 280, damping: 32 }}
-      className="fixed inset-0 bg-white dark:bg-zinc-950 z-40 flex flex-col overflow-hidden"
+      className="fixed inset-0 bg-white dark:bg-navy-950 z-40 flex flex-col overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+      <div className="flex items-center gap-3 px-4 pt-12 pb-3 border-b border-slate-100 dark:border-navy-800 shrink-0">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shrink-0"
+          className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 dark:bg-navy-800 text-navy-900 dark:text-white shrink-0"
         >
-          ←
+          <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
-        <h1 className="flex-1 text-lg font-bold text-zinc-900 dark:text-white truncate">
+        <h1 className="flex-1 text-base font-bold text-navy-900 dark:text-white truncate">
           {decodedTitle.replace(/_/g, ' ')}
         </h1>
         {article && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={toggleSave}
-            className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors shrink-0 ${
+            className={`flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 transition-colors ${
               saved
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                ? 'bg-navy-900 dark:bg-white text-white dark:text-navy-900'
+                : 'bg-slate-100 dark:bg-navy-800 text-navy-900 dark:text-white'
             }`}
           >
-            {saved ? '🔖' : '🔖'}
+            {saved
+              ? <BookmarkCheck size={18} strokeWidth={2.5} />
+              : <Bookmark size={18} strokeWidth={2} />}
           </motion.button>
         )}
       </div>
 
       {/* Article content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
         {loading && (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="text-4xl"
+              transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
             >
-              🎲
+              <Dices size={36} className="text-slate-400" strokeWidth={1.5} />
             </motion.div>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Loading article...</p>
+            <p className="text-slate-400 text-sm">Loading article…</p>
           </div>
         )}
 
         {error && (
-          <div className="flex flex-col items-center justify-center h-full gap-4 px-8 text-center">
-            <span className="text-5xl">😅</span>
-            <p className="font-bold text-zinc-800 dark:text-white">Couldn't load the article</p>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">{error}</p>
+          <div className="flex flex-col items-center justify-center h-64 gap-4 px-8 text-center">
+            <p className="text-4xl">😅</p>
+            <p className="font-bold text-navy-900 dark:text-white">Couldn't load the article</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{error}</p>
             <a
               href={wikiUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-semibold text-sm"
+              className="flex items-center gap-2 px-6 py-3 bg-navy-900 dark:bg-white text-white dark:text-navy-900 rounded-2xl font-bold text-sm"
             >
-              Open in Wikipedia ↗
+              Open in Wikipedia <ExternalLink size={13} />
             </a>
           </div>
         )}
 
         {html && !loading && (
-          <div
-            className="wiki-content px-5 py-6 prose prose-zinc dark:prose-invert max-w-none prose-headings:font-black prose-h1:text-2xl prose-h2:text-xl prose-h2:mt-8 prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-img:rounded-xl prose-img:shadow-md"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <>
+            <div
+              ref={contentRef}
+              className="wiki-content px-5 py-6 prose prose-slate dark:prose-invert max-w-none prose-headings:font-black prose-h1:text-2xl prose-h2:text-xl prose-h2:mt-8 prose-p:text-slate-600 dark:prose-p:text-slate-400 prose-img:rounded-xl prose-img:shadow-md"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+            <ResourcePanel wikiTitle={decodedTitle} articleTitle={decodedTitle.replace(/_/g, ' ')} />
+          </>
         )}
       </div>
 
@@ -121,19 +143,21 @@ export function ArticleScreen() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="px-4 py-4 border-t border-zinc-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl shrink-0"
+          className="px-4 py-4 border-t border-slate-100 dark:border-navy-800 bg-white/95 dark:bg-navy-950/95 backdrop-blur-xl shrink-0"
         >
           <a
             href={wikiUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors"
           >
-            <span>Open full article in Wikipedia</span>
-            <span>↗</span>
+            Open full article in Wikipedia
+            <ExternalLink size={13} />
           </a>
         </motion.div>
       )}
+
+      <WikiTermPopup wikiTitle={popupTitle} onClose={() => setPopupTitle(null)} />
     </motion.div>
   );
 }

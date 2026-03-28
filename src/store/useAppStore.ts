@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Article } from '../types';
 
+const MILESTONE_THRESHOLDS = [2, 5, 10, 25, 50, 100];
+
 interface AppState {
   selectedInterests: string[];
   savedArticles: Article[];
@@ -9,6 +11,7 @@ interface AppState {
   onboardingComplete: boolean;
   streak: number;
   lastActiveDate: string | null;
+  rollCount: number;
 }
 
 interface AppActions {
@@ -22,6 +25,8 @@ interface AppActions {
   isArticleSaved: (wikiTitle: string) => boolean;
   updateStreak: () => void;
   resetOnboarding: () => void;
+  incrementRollCount: () => void;
+  isMilestone: (count: number) => boolean;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -29,15 +34,14 @@ const today = () => new Date().toISOString().split('T')[0];
 export const useAppStore = create<AppState & AppActions>()(
   persist(
     (set, get) => ({
-      // State
       selectedInterests: [],
       savedArticles: [],
       history: [],
       onboardingComplete: false,
       streak: 0,
       lastActiveDate: null,
+      rollCount: 0,
 
-      // Actions
       toggleInterest: (id) =>
         set((state) => ({
           selectedInterests: state.selectedInterests.includes(id)
@@ -51,9 +55,7 @@ export const useAppStore = create<AppState & AppActions>()(
 
       saveArticle: (article) =>
         set((state) => {
-          if (state.savedArticles.some((a) => a.wikiTitle === article.wikiTitle)) {
-            return state;
-          }
+          if (state.savedArticles.some((a) => a.wikiTitle === article.wikiTitle)) return state;
           return { savedArticles: [article, ...state.savedArticles] };
         }),
 
@@ -77,16 +79,17 @@ export const useAppStore = create<AppState & AppActions>()(
         set((state) => {
           const todayStr = today();
           if (state.lastActiveDate === todayStr) return state;
-
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
           const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-          const newStreak =
-            state.lastActiveDate === yesterdayStr ? state.streak + 1 : 1;
-
+          const newStreak = state.lastActiveDate === yesterdayStr ? state.streak + 1 : 1;
           return { streak: newStreak, lastActiveDate: todayStr };
         }),
+
+      incrementRollCount: () =>
+        set((state) => ({ rollCount: state.rollCount + 1 })),
+
+      isMilestone: (count) => MILESTONE_THRESHOLDS.includes(count),
 
       resetOnboarding: () =>
         set({ onboardingComplete: false, selectedInterests: [] }),
@@ -100,6 +103,7 @@ export const useAppStore = create<AppState & AppActions>()(
         onboardingComplete: state.onboardingComplete,
         streak: state.streak,
         lastActiveDate: state.lastActiveDate,
+        rollCount: state.rollCount,
       }),
     }
   )

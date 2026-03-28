@@ -1,45 +1,41 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Compass, Bookmark, Settings } from 'lucide-react';
 
 const navItems = [
-  { to: '/home', label: 'Discover', icon: '🎲' },
-  { to: '/saved', label: 'Saved', icon: '🔖' },
-  { to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/home',     label: 'Discover', Icon: Compass  },
+  { to: '/saved',    label: 'Saved',    Icon: Bookmark },
+  { to: '/settings', label: 'Settings', Icon: Settings },
 ];
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-800 pb-safe">
-      {navItems.map((item) => (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-white/95 dark:bg-navy-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-navy-800 pb-safe">
+      {navItems.map(({ to, label, Icon }) => (
         <NavLink
-          key={item.to}
-          to={item.to}
+          key={to}
+          to={to}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-1 py-3 px-6 transition-all ${
-              isActive
-                ? 'text-zinc-900 dark:text-white'
-                : 'text-zinc-400 dark:text-zinc-500'
+            `relative flex flex-col items-center gap-1 py-3 px-6 min-w-[72px] transition-all ${
+              isActive ? 'text-navy-900 dark:text-white' : 'text-slate-400 dark:text-slate-600'
             }`
           }
         >
           {({ isActive }) => (
             <>
-              <motion.span
-                animate={{ scale: isActive ? 1.2 : 1 }}
+              <motion.div
+                animate={{ scale: isActive ? 1.1 : 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className="text-xl leading-none"
-                role="img"
-                aria-label={item.label}
               >
-                {item.icon}
-              </motion.span>
-              <span className={`text-xs font-medium ${isActive ? 'opacity-100' : 'opacity-60'}`}>
-                {item.label}
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+              </motion.div>
+              <span className={`text-[11px] font-medium ${isActive ? 'opacity-100' : 'opacity-50'}`}>
+                {label}
               </span>
               {isActive && (
                 <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute bottom-0 h-0.5 w-6 bg-zinc-900 dark:bg-white rounded-full"
+                  layoutId="nav-dot"
+                  className="absolute bottom-1 w-1 h-1 rounded-full bg-accent"
                 />
               )}
             </>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BookMarked } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { BottomNav } from '../components/BottomNav';
 
@@ -8,10 +9,10 @@ export function SavedScreen() {
   const { savedArticles, unsaveArticle } = useAppStore();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col pb-24">
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 flex flex-col pb-24">
       <div className="px-6 pt-14 pb-6">
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white">🔖 Saved</h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Saved</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           {savedArticles.length === 0
             ? 'Nothing saved yet — swipe right on a card!'
             : `${savedArticles.length} article${savedArticles.length === 1 ? '' : 's'} saved`}
@@ -25,13 +26,13 @@ export function SavedScreen() {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center pt-16 gap-4 text-center"
           >
-            <span className="text-6xl">📚</span>
-            <p className="text-zinc-400 dark:text-zinc-600 text-base">
-              Swipe right on a card or tap "🔖 Save" to keep articles here
+            <BookMarked size={56} className="text-slate-200 dark:text-navy-800" strokeWidth={1.2} />
+            <p className="text-slate-400 dark:text-slate-600 text-base max-w-xs">
+              Swipe right on a card to keep articles here
             </p>
             <button
               onClick={() => navigate('/home')}
-              className="mt-2 px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-semibold text-sm"
+              className="mt-2 px-6 py-3 bg-navy-900 dark:bg-white text-white dark:text-navy-900 rounded-2xl font-bold text-sm"
             >
               Start rolling →
             </button>
@@ -47,7 +48,7 @@ export function SavedScreen() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, x: -50 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 overflow-hidden"
+                  className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-100 dark:border-navy-800 overflow-hidden"
                 >
                   <button
                     onClick={() => navigate(`/article/${encodeURIComponent(article.wikiTitle)}`)}
@@ -61,16 +62,13 @@ export function SavedScreen() {
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <div
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white mb-1"
-                        style={{ backgroundColor: article.interestColor }}
-                      >
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-navy-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         {article.interestEmoji} {article.interestLabel}
-                      </div>
-                      <h3 className="font-bold text-zinc-900 dark:text-white text-sm leading-snug line-clamp-2">
+                      </span>
+                      <h3 className="font-bold text-navy-900 dark:text-white text-sm leading-snug line-clamp-2">
                         {article.title}
                       </h3>
-                      <p className="text-zinc-500 dark:text-zinc-500 text-xs mt-1 line-clamp-2">
+                      <p className="text-slate-500 dark:text-slate-500 text-xs mt-1 line-clamp-2">
                         {article.extract}
                       </p>
                     </div>
@@ -78,7 +76,7 @@ export function SavedScreen() {
                   <div className="px-4 pb-3 flex items-center justify-end">
                     <button
                       onClick={() => unsaveArticle(article.wikiTitle)}
-                      className="text-xs text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors font-medium"
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors font-medium min-h-[36px] px-2"
                     >
                       Remove
                     </button>

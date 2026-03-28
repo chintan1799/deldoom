@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
+import { Lightbulb, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Article } from '../types';
-import { useAppStore } from '../store/useAppStore';
 
 interface ArticleCardProps {
   article: Article;
@@ -11,32 +12,30 @@ interface ArticleCardProps {
 
 export function ArticleCard({ article, onSkip, onSave }: ArticleCardProps) {
   const navigate = useNavigate();
-  const isSaved = useAppStore((s) => s.isArticleSaved(article.wikiTitle));
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-12, 12]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+  const [expanded, setExpanded] = useState(false);
 
-  const saveOpacity = useTransform(x, [0, 80, 150], [0, 0.7, 1]);
-  const skipOpacity = useTransform(x, [-150, -80, 0], [1, 0.7, 0]);
+  const x       = useMotionValue(0);
+  const rotate  = useTransform(x, [-200, 200], [-10, 10]);
+  const opacity = useTransform(x, [-200, -80, 0, 80, 200], [0, 1, 1, 1, 0]);
+  const saveOpacity = useTransform(x, [0, 60, 130], [0, 0.8, 1]);
+  const skipOpacity = useTransform(x, [-130, -60, 0], [1, 0.8, 0]);
 
   const controls = useAnimation();
 
   async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
-    const threshold = 100;
-    if (info.offset.x > threshold) {
-      await controls.start({ x: 400, opacity: 0, transition: { duration: 0.3 } });
+    if (info.offset.x > 110) {
+      await controls.start({ x: 420, opacity: 0, transition: { duration: 0.28 } });
       onSave();
-    } else if (info.offset.x < -threshold) {
-      await controls.start({ x: -400, opacity: 0, transition: { duration: 0.3 } });
+    } else if (info.offset.x < -110) {
+      await controls.start({ x: -420, opacity: 0, transition: { duration: 0.28 } });
       onSkip();
     } else {
-      controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } });
+      controls.start({ x: 0, transition: { type: 'spring', stiffness: 320, damping: 28 } });
     }
   }
 
-  function handleReadMore() {
-    navigate(`/article/${encodeURIComponent(article.wikiTitle)}`);
-  }
+  const imageUrl = article.thumbnailUrl || article.imageUrl;
+  const shortExtract = article.extract.slice(0, 220) + (article.extract.length > 220 ? '…' : '');
 
   return (
     <motion.div
@@ -44,34 +43,34 @@ export function ArticleCard({ article, onSkip, onSave }: ArticleCardProps) {
       animate={controls}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.3}
+      dragElastic={0.25}
       onDragEnd={handleDragEnd}
-      className="relative w-full max-w-sm mx-auto cursor-grab active:cursor-grabbing"
-      initial={{ scale: 0.9, opacity: 0, y: 40 }}
-      whileInView={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+      className="relative w-full max-w-sm mx-auto draggable-card"
+      initial={{ scale: 0.93, y: 30 }}
+      transition={{ type: 'spring', stiffness: 280, damping: 26 }}
     >
-      {/* Swipe indicators */}
+      {/* Swipe labels */}
       <motion.div
         style={{ opacity: saveOpacity }}
-        className="absolute top-6 right-6 z-20 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg"
+        className="absolute top-5 right-5 z-20 bg-navy-900 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg pointer-events-none"
       >
-        🔖 Save
+        Save
       </motion.div>
       <motion.div
         style={{ opacity: skipOpacity }}
-        className="absolute top-6 left-6 z-20 bg-zinc-800 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg"
+        className="absolute top-5 left-5 z-20 bg-slate-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg pointer-events-none"
       >
-        ✕ Skip
+        Skip
       </motion.div>
 
       {/* Card */}
-      <div className="rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl border border-zinc-100 dark:border-zinc-800">
+      <div className="rounded-3xl overflow-hidden bg-white dark:bg-navy-900 shadow-xl border border-slate-100 dark:border-navy-800">
+
         {/* Hero image */}
-        {article.thumbnailUrl && (
-          <div className="w-full h-52 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+        {imageUrl && (
+          <div className="w-full h-52 overflow-hidden bg-slate-100 dark:bg-navy-800">
             <img
-              src={article.thumbnailUrl}
+              src={imageUrl}
               alt={article.title}
               className="w-full h-full object-cover"
               loading="lazy"
@@ -79,32 +78,61 @@ export function ArticleCard({ article, onSkip, onSave }: ArticleCardProps) {
           </div>
         )}
 
-        {/* Content */}
-        <div className="p-6">
-          {/* Interest tag */}
-          <div className="flex items-center gap-2 mb-3">
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white"
-              style={{ backgroundColor: article.interestColor }}
-            >
+        <div className="p-5">
+          {/* Category + meta row */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-navy-800 text-slate-600 dark:text-slate-400 text-xs font-semibold">
               {article.interestEmoji} {article.interestLabel}
             </span>
+            {article.readingTimeMin && (
+              <span className="inline-flex items-center gap-1 text-xs text-slate-400 dark:text-slate-600">
+                <Clock size={11} strokeWidth={2} />
+                {article.readingTimeMin} min read
+              </span>
+            )}
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-3 leading-tight line-clamp-3">
+          <h2 className="text-xl font-black text-navy-900 dark:text-white leading-tight mb-1">
             {article.title}
           </h2>
 
+          {/* Description / subtitle */}
+          {article.description && (
+            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-3">
+              {article.description}
+            </p>
+          )}
+
           {/* Extract */}
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed line-clamp-4 mb-6">
-            {article.extract}
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-1">
+            {expanded ? article.extract : shortExtract}
           </p>
+
+          {article.extract.length > 220 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+              className="flex items-center gap-1 text-xs text-accent font-medium mb-4 mt-1"
+            >
+              {expanded ? <><ChevronUp size={13} /> Show less</> : <><ChevronDown size={13} /> Read more</>}
+            </button>
+          )}
+
+          {/* Interesting fact box */}
+          {article.interestingFact && (
+            <div className="bg-slate-50 dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-2xl p-3.5 mb-5 flex gap-2.5">
+              <Lightbulb size={15} className="text-accent shrink-0 mt-0.5" strokeWidth={2} />
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                <span className="font-bold text-navy-900 dark:text-white">Did you know? </span>
+                {article.interestingFact}
+              </p>
+            </div>
+          )}
 
           {/* CTA */}
           <button
-            onClick={handleReadMore}
-            className="w-full py-3.5 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold text-sm transition-opacity hover:opacity-90 active:opacity-80"
+            onClick={() => navigate(`/article/${encodeURIComponent(article.wikiTitle)}`)}
+            className="w-full py-3.5 rounded-2xl bg-navy-900 dark:bg-white text-white dark:text-navy-900 font-bold text-sm tracking-wide hover:opacity-90 active:opacity-80 transition-opacity"
           >
             Dig deeper →
           </button>
@@ -112,8 +140,8 @@ export function ArticleCard({ article, onSkip, onSave }: ArticleCardProps) {
       </div>
 
       {/* Swipe hint */}
-      <p className="text-center text-xs text-zinc-400 dark:text-zinc-600 mt-4 select-none">
-        ← skip &nbsp;&nbsp;&nbsp; swipe &nbsp;&nbsp;&nbsp; save →
+      <p className="text-center text-[11px] text-slate-300 dark:text-slate-700 mt-3 select-none tracking-wide">
+        ← skip &nbsp;·&nbsp; swipe &nbsp;·&nbsp; save →
       </p>
     </motion.div>
   );
