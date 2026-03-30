@@ -7,6 +7,8 @@ export interface InterestCategory {
   textClass: string;
   group: string;
   wikipediaCategories: string[];
+  redditSubs?: string[];
+  hnTags?: string[];
 }
 
 export interface Article {
@@ -23,6 +25,11 @@ export interface Article {
   interestEmoji: string;
   interestColor: string;
   readingTimeMin?: number;
+  source?: 'wikipedia' | 'reddit' | 'hackernews';
+  author?: string;
+  publishedAt?: string;
+  score?: number;
+  subreddit?: string;
 }
 
 export interface RelatedArticle {

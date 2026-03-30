@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { Article } from '../types';
-import { fetchRandomArticleForInterests } from '../api/wikipedia';
+import { fetchRandomArticle } from '../api/articles';
 
 interface UseArticleReturn {
   article: Article | null;
@@ -18,7 +18,7 @@ export function useArticle(selectedInterests: string[]): UseArticleReturn {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchRandomArticleForInterests(selectedInterests);
+      const result = await fetchRandomArticle(selectedInterests);
       setArticle(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch article');

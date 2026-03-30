@@ -11,6 +11,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-indigo-600',
     group: 'Science',
     wikipediaCategories: ['Physics', 'Quantum_mechanics', 'Theoretical_physics'],
+    redditSubs: ['Physics', 'AskScience'],
+    hnTags: ['physics', 'science'],
   },
   {
     id: 'astronomy',
@@ -21,6 +23,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-600',
     group: 'Science',
     wikipediaCategories: ['Astronomy', 'Astrophysics', 'Space_exploration'],
+    redditSubs: ['Astronomy', 'space'],
+    hnTags: ['space', 'astronomy'],
   },
   {
     id: 'chemistry',
@@ -31,6 +35,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-cyan-600',
     group: 'Science',
     wikipediaCategories: ['Chemistry', 'Organic_chemistry', 'Chemical_elements'],
+    redditSubs: ['chemistry'],
   },
   {
     id: 'biology',
@@ -41,6 +46,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-emerald-600',
     group: 'Science',
     wikipediaCategories: ['Biology', 'Cell_biology', 'Evolutionary_biology'],
+    redditSubs: ['biology', 'evolution'],
   },
   {
     id: 'neuroscience',
@@ -51,6 +57,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-600',
     group: 'Science',
     wikipediaCategories: ['Neuroscience', 'Cognitive_science', 'Neurology'],
+    redditSubs: ['neuroscience', 'cogsci'],
   },
   {
     id: 'genetics',
@@ -61,6 +68,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-lime-600',
     group: 'Science',
     wikipediaCategories: ['Genetics', 'Genomics', 'Molecular_biology'],
+    redditSubs: ['genetics'],
+    hnTags: ['genetics', 'biology'],
   },
   {
     id: 'earth_science',
@@ -71,6 +80,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-sky-600',
     group: 'Science',
     wikipediaCategories: ['Earth_sciences', 'Geology', 'Oceanography'],
+    redditSubs: ['geology', 'EarthPorn'],
   },
   {
     id: 'mathematics',
@@ -81,6 +91,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-rose-600',
     group: 'Science',
     wikipediaCategories: ['Mathematics', 'Number_theory', 'Geometry'],
+    redditSubs: ['math', 'mathematics'],
+    hnTags: ['math', 'mathematics'],
   },
   {
     id: 'ecology',
@@ -91,6 +103,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-600',
     group: 'Science',
     wikipediaCategories: ['Ecology', 'Environmental_science', 'Conservation_biology'],
+    redditSubs: ['ecology', 'environment'],
   },
   {
     id: 'climate',
@@ -101,6 +114,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-orange-600',
     group: 'Science',
     wikipediaCategories: ['Climate_change', 'Climatology', 'Environmental_issues'],
+    redditSubs: ['climate', 'environment'],
   },
 
   // ── TECHNOLOGY ───────────────────────────────────────────
@@ -113,6 +127,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-indigo-600',
     group: 'Technology',
     wikipediaCategories: ['Artificial_intelligence', 'Machine_learning', 'Deep_learning'],
+    redditSubs: ['MachineLearning', 'artificial'],
+    hnTags: ['ai', 'machine-learning'],
   },
   {
     id: 'coding',
@@ -123,6 +139,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-slate-700',
     group: 'Technology',
     wikipediaCategories: ['Programming_languages', 'Software_engineering', 'Computer_science'],
+    redditSubs: ['programming', 'learnprogramming'],
+    hnTags: ['programming', 'software'],
   },
   {
     id: 'robotics',
@@ -133,6 +151,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-slate-600',
     group: 'Technology',
     wikipediaCategories: ['Robotics', 'Automation', 'Mechatronics'],
+    redditSubs: ['robotics'],
+    hnTags: ['robotics'],
   },
   {
     id: 'space_tech',
@@ -143,6 +163,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-blue-700',
     group: 'Technology',
     wikipediaCategories: ['Spacecraft', 'Space_technology', 'Rockets'],
+    redditSubs: ['spacex', 'space'],
+    hnTags: ['space', 'rockets'],
   },
   {
     id: 'cybersecurity',
@@ -153,6 +175,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-red-600',
     group: 'Technology',
     wikipediaCategories: ['Computer_security', 'Cryptography', 'Hacking'],
+    redditSubs: ['netsec', 'cybersecurity'],
+    hnTags: ['security', 'netsec'],
   },
   {
     id: 'gadgets',
@@ -163,6 +187,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-sky-600',
     group: 'Technology',
     wikipediaCategories: ['Consumer_electronics', 'Mobile_phones', 'Wearable_technology'],
+    redditSubs: ['gadgets', 'hardware'],
   },
   {
     id: 'internet',
@@ -173,6 +198,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-cyan-600',
     group: 'Technology',
     wikipediaCategories: ['Internet', 'World_Wide_Web', 'Social_media'],
+    redditSubs: ['technology', 'webdev'],
+    hnTags: ['web', 'internet'],
   },
   {
     id: 'blockchain',
@@ -183,6 +210,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-600',
     group: 'Technology',
     wikipediaCategories: ['Blockchain', 'Cryptocurrency', 'Bitcoin'],
+    redditSubs: ['CryptoCurrency'],
+    hnTags: ['blockchain', 'crypto'],
   },
   {
     id: 'biotech',
@@ -193,6 +222,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-emerald-600',
     group: 'Technology',
     wikipediaCategories: ['Biotechnology', 'Genetic_engineering', 'CRISPR'],
+    redditSubs: ['biotech'],
+    hnTags: ['biotech', 'biology'],
   },
 
   // ── HISTORY ──────────────────────────────────────────────
@@ -205,6 +236,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-800',
     group: 'History',
     wikipediaCategories: ['Ancient_history', 'Ancient_Rome', 'Ancient_Greece'],
+    redditSubs: ['AncientHistory', 'history'],
   },
   {
     id: 'medieval',
@@ -215,6 +247,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-yellow-900',
     group: 'History',
     wikipediaCategories: ['Middle_Ages', 'Medieval_warfare', 'Crusades'],
+    redditSubs: ['ArtefactPorn', 'history'],
   },
   {
     id: 'modern_history',
@@ -225,6 +258,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-gray-700',
     group: 'History',
     wikipediaCategories: ['Modern_history', '20th_century', 'Cold_War'],
+    redditSubs: ['history', 'HistoryMemes'],
   },
   {
     id: 'wars',
@@ -235,6 +269,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-red-900',
     group: 'History',
     wikipediaCategories: ['Wars', 'World_War_II', 'Military_history'],
+    redditSubs: ['Military', 'history'],
   },
   {
     id: 'archaeology',
@@ -245,6 +280,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-yellow-700',
     group: 'History',
     wikipediaCategories: ['Archaeology', 'Ancient_artifacts', 'Prehistoric_cultures'],
+    redditSubs: ['Archaeology'],
   },
   {
     id: 'revolutions',
@@ -255,6 +291,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-rose-700',
     group: 'History',
     wikipediaCategories: ['Revolutions', 'French_Revolution', 'Political_revolutions'],
+    redditSubs: ['AskHistorians', 'history'],
   },
   {
     id: 'empires',
@@ -265,6 +302,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-yellow-600',
     group: 'History',
     wikipediaCategories: ['Empires', 'Dynasties', 'Colonial_history'],
+    redditSubs: ['AskHistorians', 'history'],
   },
 
   // ── ARTS & CULTURE ───────────────────────────────────────
@@ -277,6 +315,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-fuchsia-600',
     group: 'Arts',
     wikipediaCategories: ['Music', 'Music_genres', 'Musical_instruments'],
+    redditSubs: ['Music', 'WeAreTheMusicMakers'],
   },
   {
     id: 'cinema',
@@ -287,6 +326,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-rose-600',
     group: 'Arts',
     wikipediaCategories: ['Film', 'Cinema', 'Film_directors'],
+    redditSubs: ['movies', 'TrueFilm'],
   },
   {
     id: 'literature',
@@ -297,6 +337,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-600',
     group: 'Arts',
     wikipediaCategories: ['Literature', 'Novels', 'Poetry'],
+    redditSubs: ['books', 'literature'],
   },
   {
     id: 'visual_art',
@@ -307,6 +348,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-pink-600',
     group: 'Arts',
     wikipediaCategories: ['Visual_arts', 'Painting', 'Modern_art'],
+    redditSubs: ['Art', 'ArtHistory'],
   },
   {
     id: 'architecture',
@@ -317,6 +359,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-slate-600',
     group: 'Arts',
     wikipediaCategories: ['Architecture', 'Architectural_styles', 'Famous_buildings'],
+    redditSubs: ['architecture'],
   },
   {
     id: 'photography',
@@ -327,6 +370,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-slate-800',
     group: 'Arts',
     wikipediaCategories: ['Photography', 'Photographers', 'Photographic_techniques'],
+    redditSubs: ['itookapicture', 'analog'],
   },
   {
     id: 'theatre',
@@ -337,6 +381,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-fuchsia-700',
     group: 'Arts',
     wikipediaCategories: ['Theatre', 'Dance', 'Performing_arts'],
+    redditSubs: ['theater', 'dance'],
   },
   {
     id: 'animation',
@@ -347,6 +392,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-orange-600',
     group: 'Arts',
     wikipediaCategories: ['Animation', 'Comics', 'Manga'],
+    redditSubs: ['animation', 'manga'],
   },
 
   // ── SPORTS ───────────────────────────────────────────────
@@ -359,6 +405,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-700',
     group: 'Sports',
     wikipediaCategories: ['Association_football', 'FIFA', 'Football_clubs'],
+    redditSubs: ['soccer'],
   },
   {
     id: 'basketball',
@@ -369,6 +416,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-orange-600',
     group: 'Sports',
     wikipediaCategories: ['Basketball', 'NBA', 'Basketball_players'],
+    redditSubs: ['nba', 'basketball'],
   },
   {
     id: 'cricket',
@@ -379,6 +427,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-lime-700',
     group: 'Sports',
     wikipediaCategories: ['Cricket', 'Test_cricket', 'Cricket_players'],
+    redditSubs: ['cricket'],
   },
   {
     id: 'tennis',
@@ -389,6 +438,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-lime-600',
     group: 'Sports',
     wikipediaCategories: ['Tennis', 'Grand_Slam_tournaments', 'Tennis_players'],
+    redditSubs: ['tennis'],
   },
   {
     id: 'formula1',
@@ -399,6 +449,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-red-600',
     group: 'Sports',
     wikipediaCategories: ['Formula_One', 'F1_drivers', 'Grand_Prix'],
+    redditSubs: ['formula1'],
   },
   {
     id: 'olympics',
@@ -409,6 +460,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-600',
     group: 'Sports',
     wikipediaCategories: ['Olympic_Games', 'Summer_Olympics', 'Olympic_sports'],
+    redditSubs: ['olympics'],
   },
   {
     id: 'combat_sports',
@@ -419,6 +471,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-red-700',
     group: 'Sports',
     wikipediaCategories: ['Boxing', 'Martial_arts', 'Mixed_martial_arts'],
+    redditSubs: ['MMA', 'boxing'],
   },
   {
     id: 'esports',
@@ -429,6 +482,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-700',
     group: 'Sports',
     wikipediaCategories: ['Esports', 'Video_games', 'Video_game_history'],
+    redditSubs: ['esports', 'Games'],
   },
   {
     id: 'outdoor_sports',
@@ -439,6 +493,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-teal-700',
     group: 'Sports',
     wikipediaCategories: ['Outdoor_sports', 'Adventure_sports', 'Mountaineering'],
+    redditSubs: ['climbing', 'Ultralight'],
   },
 
   // ── NATURE ───────────────────────────────────────────────
@@ -451,6 +506,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-600',
     group: 'Nature',
     wikipediaCategories: ['Animals', 'Mammals', 'Endangered_species'],
+    redditSubs: ['natureismetal', 'wildlifephotography'],
   },
   {
     id: 'ocean',
@@ -461,6 +517,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-sky-600',
     group: 'Nature',
     wikipediaCategories: ['Marine_biology', 'Oceans', 'Fish'],
+    redditSubs: ['scuba', 'marine'],
   },
   {
     id: 'plants',
@@ -471,6 +528,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-600',
     group: 'Nature',
     wikipediaCategories: ['Botany', 'Plants', 'Trees'],
+    redditSubs: ['botany', 'whatsthisplant'],
   },
   {
     id: 'birds',
@@ -481,6 +539,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-emerald-600',
     group: 'Nature',
     wikipediaCategories: ['Birds', 'Ornithology', 'Bird_species'],
+    redditSubs: ['birding'],
   },
   {
     id: 'geology',
@@ -491,6 +550,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-stone-600',
     group: 'Nature',
     wikipediaCategories: ['Geology', 'Minerals', 'Volcanoes'],
+    redditSubs: ['geology', 'whatsthisrock'],
   },
 
   // ── MIND & SOCIETY ───────────────────────────────────────
@@ -503,6 +563,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Philosophy', 'Philosophers', 'Ethics'],
+    redditSubs: ['philosophy', 'askphilosophy'],
   },
   {
     id: 'psychology',
@@ -513,6 +574,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-600',
     group: 'Mind & Society',
     wikipediaCategories: ['Psychology', 'Cognitive_psychology', 'Social_psychology'],
+    redditSubs: ['psychology'],
   },
   {
     id: 'economics',
@@ -523,6 +585,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Economics', 'Macroeconomics', 'Economic_theory'],
+    redditSubs: ['economics', 'worldnews'],
+    hnTags: ['economics', 'finance'],
   },
   {
     id: 'politics',
@@ -533,6 +597,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-blue-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Politics', 'Political_theory', 'Governments'],
+    redditSubs: ['PoliticalDiscussion'],
   },
   {
     id: 'sociology',
@@ -543,6 +608,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-cyan-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Sociology', 'Social_movements', 'Cultural_studies'],
+    redditSubs: ['sociology'],
   },
   {
     id: 'mythology',
@@ -553,6 +619,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-purple-600',
     group: 'Mind & Society',
     wikipediaCategories: ['Mythology', 'Greek_mythology', 'Norse_mythology'],
+    redditSubs: ['mythology'],
   },
   {
     id: 'religion',
@@ -563,6 +630,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-yellow-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Religion', 'World_religions', 'Spirituality'],
+    redditSubs: ['religion'],
   },
   {
     id: 'linguistics',
@@ -573,6 +641,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-teal-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Linguistics', 'Languages', 'Language_families'],
+    redditSubs: ['linguistics'],
   },
   {
     id: 'law',
@@ -583,6 +652,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-gray-700',
     group: 'Mind & Society',
     wikipediaCategories: ['Law', 'Legal_systems', 'Famous_trials'],
+    redditSubs: ['law'],
   },
 
   // ── CULTURE & LIFESTYLE ──────────────────────────────────
@@ -595,6 +665,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-orange-600',
     group: 'Culture',
     wikipediaCategories: ['Cuisine', 'Food', 'Gastronomy'],
+    redditSubs: ['food', 'Cooking'],
   },
   {
     id: 'travel',
@@ -605,6 +676,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-sky-600',
     group: 'Culture',
     wikipediaCategories: ['Geography', 'Travel', 'World_heritage_sites'],
+    redditSubs: ['travel', 'solotravel'],
   },
   {
     id: 'fashion',
@@ -615,6 +687,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-pink-600',
     group: 'Culture',
     wikipediaCategories: ['Fashion', 'Fashion_designers', 'Clothing'],
+    redditSubs: ['streetwear', 'femalefashionadvice'],
   },
   {
     id: 'pop_culture',
@@ -625,6 +698,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-purple-600',
     group: 'Culture',
     wikipediaCategories: ['Popular_culture', 'Internet_culture', 'Memes'],
+    redditSubs: ['entertainment', 'popculturechat'],
   },
 
   // ── HEALTH ───────────────────────────────────────────────
@@ -637,6 +711,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-blue-600',
     group: 'Health',
     wikipediaCategories: ['Medicine', 'Medical_history', 'Diseases'],
+    redditSubs: ['medicine'],
   },
   {
     id: 'nutrition',
@@ -647,6 +722,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-700',
     group: 'Health',
     wikipediaCategories: ['Nutrition', 'Dietetics', 'Human_nutrition'],
+    redditSubs: ['nutrition'],
   },
   {
     id: 'mental_health',
@@ -657,6 +733,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-emerald-600',
     group: 'Health',
     wikipediaCategories: ['Mental_health', 'Mental_disorders', 'Psychotherapy'],
+    redditSubs: ['mentalhealth'],
   },
 
   // ── BUSINESS ─────────────────────────────────────────────
@@ -669,6 +746,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-600',
     group: 'Business',
     wikipediaCategories: ['Entrepreneurship', 'Startups', 'Business_history'],
+    redditSubs: ['startups', 'Entrepreneur'],
+    hnTags: ['startup', 'entrepreneurship'],
   },
   {
     id: 'finance',
@@ -679,6 +758,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-green-700',
     group: 'Business',
     wikipediaCategories: ['Finance', 'Investment', 'Stock_market'],
+    redditSubs: ['investing', 'personalfinance'],
+    hnTags: ['finance', 'investing'],
   },
 
   // ── WEIRD & WONDERFUL ────────────────────────────────────
@@ -691,6 +772,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-violet-900',
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Unsolved_problems', 'Mysteries', 'Paranormal'],
+    redditSubs: ['UnsolvedMysteries', 'mystery'],
   },
   {
     id: 'weird',
@@ -701,6 +783,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-fuchsia-700',
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Unusual_places', 'Bizarre_incidents', 'Optical_illusions'],
+    redditSubs: ['todayilearned', 'Damnthatsinteresting'],
   },
   {
     id: 'inventions',
@@ -711,6 +794,8 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-amber-700',
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Inventions', 'Discoveries', 'History_of_technology'],
+    redditSubs: ['engineering', 'Damnthatsinteresting'],
+    hnTags: ['invention', 'engineering'],
   },
   {
     id: 'biographies',
@@ -721,6 +806,7 @@ export const INTERESTS: InterestCategory[] = [
     textClass: 'text-yellow-600',
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Biographies', 'Famous_people', 'Historical_figures'],
+    redditSubs: ['IAmA', 'AMA'],
   },
 ];
 
