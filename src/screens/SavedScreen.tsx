@@ -1,18 +1,28 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookMarked } from 'lucide-react';
+import { BookMarked, Menu } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
-import { BottomNav } from '../components/BottomNav';
+import { DrawerMenu } from '../components/DrawerMenu';
 
 export function SavedScreen() {
   const navigate = useNavigate();
   const { savedArticles, unsaveArticle } = useAppStore();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 flex flex-col pb-24">
-      <div className="px-6 pt-14 pb-6">
-        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Saved</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 flex flex-col pb-8">
+      <div className="px-5 pb-6" style={{ paddingTop: 'max(20px, env(safe-area-inset-top))' }}>
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="w-10 h-10 rounded-full bg-white dark:bg-navy-800 shadow flex items-center justify-center shrink-0"
+          >
+            <Menu size={20} strokeWidth={2} className="text-navy-900 dark:text-white" />
+          </button>
+          <h1 className="text-2xl font-black text-navy-900 dark:text-white">Saved</h1>
+        </div>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
           {savedArticles.length === 0
             ? 'Nothing saved yet — swipe right on a card!'
             : `${savedArticles.length} article${savedArticles.length === 1 ? '' : 's'} saved`}
@@ -88,7 +98,7 @@ export function SavedScreen() {
         )}
       </div>
 
-      <BottomNav />
+      <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }

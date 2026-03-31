@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Flame, BookOpen, RotateCcw } from 'lucide-react';
+import { Target, Flame, BookOpen, RotateCcw, Menu } from 'lucide-react';
 import { INTERESTS, INTEREST_GROUPS } from '../data/interests';
 import { Tag } from '../components/ui/Tag';
 import { Button } from '../components/ui/Button';
-import { BottomNav } from '../components/BottomNav';
+import { DrawerMenu } from '../components/DrawerMenu';
 import { useAppStore } from '../store/useAppStore';
 
 type Tab = 'interests' | 'history';
@@ -22,6 +22,7 @@ export function SettingsScreen() {
   const [tab, setTab] = useState<Tab>('interests');
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const filteredInterests = activeGroup
     ? INTERESTS.filter((i) => i.group === activeGroup)
@@ -34,10 +35,18 @@ export function SettingsScreen() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 flex flex-col pb-24">
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 flex flex-col pb-8">
       {/* Header */}
-      <div className="px-6 pt-14 pb-4">
-        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Settings</h1>
+      <div className="px-5 pb-4" style={{ paddingTop: 'max(20px, env(safe-area-inset-top))' }}>
+        <div className="flex items-center gap-3 mb-2">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="w-10 h-10 rounded-full bg-white dark:bg-navy-800 shadow flex items-center justify-center shrink-0"
+          >
+            <Menu size={20} strokeWidth={2} className="text-navy-900 dark:text-white" />
+          </button>
+          <h1 className="text-2xl font-black text-navy-900 dark:text-white">Settings</h1>
+        </div>
 
         {/* Stats row */}
         <div className="flex gap-3 mt-4">
@@ -222,7 +231,7 @@ export function SettingsScreen() {
         )}
       </div>
 
-      <BottomNav />
+      <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ interface AppState {
   streak: number;
   lastActiveDate: string | null;
   rollCount: number;
+  darkMode: boolean;
 }
 
 interface AppActions {
@@ -27,6 +28,7 @@ interface AppActions {
   resetOnboarding: () => void;
   incrementRollCount: () => void;
   isMilestone: (count: number) => boolean;
+  toggleDarkMode: () => void;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -41,6 +43,7 @@ export const useAppStore = create<AppState & AppActions>()(
       streak: 0,
       lastActiveDate: null,
       rollCount: 0,
+      darkMode: false,
 
       toggleInterest: (id) =>
         set((state) => ({
@@ -91,6 +94,9 @@ export const useAppStore = create<AppState & AppActions>()(
 
       isMilestone: (count) => MILESTONE_THRESHOLDS.includes(count),
 
+      toggleDarkMode: () =>
+        set((state) => ({ darkMode: !state.darkMode })),
+
       resetOnboarding: () =>
         set({ onboardingComplete: false, selectedInterests: [] }),
     }),
@@ -104,6 +110,7 @@ export const useAppStore = create<AppState & AppActions>()(
         streak: state.streak,
         lastActiveDate: state.lastActiveDate,
         rollCount: state.rollCount,
+        darkMode: state.darkMode,
       }),
     }
   )

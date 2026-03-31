@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store/useAppStore';
@@ -16,6 +17,11 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const location = useLocation();
+  const darkMode = useAppStore((s) => s.darkMode);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   return (
     <AnimatePresence mode="wait">
