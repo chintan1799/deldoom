@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Bookmark, BookmarkCheck, Dices, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Bookmark, BookmarkCheck, Dices, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { fetchArticleHtml, sanitizeWikiHtml } from '../api/wikipedia';
 import { useAppStore } from '../store/useAppStore';
 import { WikiTermPopup } from '../components/WikiTermPopup';
 import { ResourcePanel } from '../components/ResourcePanel';
+import type { Article } from '../types';
 
 // ── Section parser ────────────────────────────────────────────────────────────
 interface Section {
@@ -40,10 +41,26 @@ function readTime(wc: number) {
   return Math.max(1, Math.round(wc / 200));
 }
 
+function buildSectionsFromText(text: string, title: string): Section[] {
+  const words = text.trim().split(/\s+/);
+  const CHUNK = 150;
+  if (words.length <= CHUNK) {
+    return [{ title, html: `<p>${text}</p>`, wordCount: words.length }];
+  }
+  return Array.from({ length: Math.ceil(words.length / CHUNK) }, (_, i) => ({
+    title: i === 0 ? title : `Part ${i + 1}`,
+    html: `<p>${words.slice(i * CHUNK, (i + 1) * CHUNK).join(' ')}</p>`,
+    wordCount: Math.min(CHUNK, words.length - i * CHUNK),
+  }));
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export function ArticleScreen() {
   const { wikiTitle } = useParams<{ wikiTitle: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedArticle = (location.state as { article?: Article } | null)?.article;
+  const isWikipedia = !passedArticle || passedArticle.source === 'wikipedia';
   const { savedArticles, saveArticle, unsaveArticle, isArticleSaved } = useAppStore();
 
   const [sections, setSections] = useState<Section[]>([]);
@@ -55,8 +72,9 @@ export function ArticleScreen() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const decodedTitle = decodeURIComponent(wikiTitle ?? '');
-  const article = savedArticles.find((a) => a.wikiTitle === decodedTitle);
+  const article = passedArticle ?? savedArticles.find((a) => a.wikiTitle === decodedTitle);
   const saved = isArticleSaved(decodedTitle);
+  const displayTitle = passedArticle?.title ?? decodedTitle.replace(/_/g, ' ');
 
   useEffect(() => {
     if (!decodedTitle) return;
@@ -65,6 +83,14 @@ export function ArticleScreen() {
     setSections([]);
     setCurrentIdx(0);
 
+    if (!isWikipedia && passedArticle) {
+      // Non-Wikipedia: build sections directly from extract text
+      const built = buildSectionsFromText(passedArticle.extract, passedArticle.title);
+      setSections(built);
+      setLoading(false);
+      return;
+    }
+
     fetchArticleHtml(decodedTitle)
       .then((raw) => {
         const clean = sanitizeWikiHtml(raw);
@@ -72,7 +98,7 @@ export function ArticleScreen() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [decodedTitle]);
+  }, [decodedTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Event delegation for wiki-link taps
   useEffect(() => {
@@ -128,7 +154,7 @@ export function ArticleScreen() {
           <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
         <h1 className="flex-1 text-base font-bold text-navy-900 dark:text-white truncate">
-          {decodedTitle.replace(/_/g, ' ')}
+          {displayTitle}
         </h1>
         {article && (
           <motion.button whileTap={{ scale: 0.9 }} onClick={toggleSave}
@@ -155,7 +181,7 @@ export function ArticleScreen() {
             <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
               {currentSection.title !== 'Introduction' && currentSection.title !== 'Article'
                 ? currentSection.title
-                : decodedTitle.replace(/_/g, ' ')}
+                : displayTitle}
             </span>
             <span className="text-xs text-slate-400 dark:text-slate-500">
               {currentIdx + 1} / {sections.length} · {readTime(currentSection?.wordCount ?? 0)} min
@@ -204,11 +230,35 @@ export function ArticleScreen() {
                 dangerouslySetInnerHTML={{ __html: currentSection.html }}
               />
 
-              {/* Resource panel after last section */}
-              {isLastSection && (
+              {/* Absorbed button */}
+              <div className="px-5 pb-4">
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => {
+                    if (isLastSection) navigate(-1);
+                    else goTo(currentIdx + 1);
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-navy-900 dark:bg-white text-white dark:text-navy-900 font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  {isLastSection ? 'All absorbed ✓' : 'Absorbed ✓'}
+                </motion.button>
+
+                {/* View original for non-Wikipedia */}
+                {isLastSection && !isWikipedia && passedArticle && (
+                  <button
+                    onClick={() => window.open(passedArticle.pageUrl, '_blank', 'noopener,noreferrer')}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-slate-200 dark:border-navy-700 text-slate-500 dark:text-slate-400 text-sm font-medium"
+                  >
+                    <ExternalLink size={14} /> View original
+                  </button>
+                )}
+              </div>
+
+              {/* Resource panel after last section (Wikipedia only) */}
+              {isLastSection && isWikipedia && (
                 <ResourcePanel
                   wikiTitle={decodedTitle}
-                  articleTitle={decodedTitle.replace(/_/g, ' ')}
+                  articleTitle={displayTitle}
                 />
               )}
 

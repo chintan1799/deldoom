@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
-import { Lightbulb, ChevronDown, ChevronUp, ArrowUpRight, TrendingUp, User, X, Bookmark, Dices } from 'lucide-react';
+import { Lightbulb, ChevronDown, ChevronUp, TrendingUp, User, X, Bookmark, Dices } from 'lucide-react';
 import type { Article } from '../types';
 
 interface ArticleCardProps {
@@ -12,11 +12,20 @@ interface ArticleCardProps {
   loading?: boolean;
 }
 
-const SOURCE_CONFIG = {
-  wikipedia:  { label: 'WIKI',   bg: 'bg-navy-900 dark:bg-white', text: 'text-white dark:text-navy-900' },
-  reddit:     { label: 'REDDIT', bg: 'bg-orange-500',              text: 'text-white' },
-  hackernews: { label: 'HN',     bg: 'bg-amber-500',               text: 'text-white' },
-} as const;
+const SOURCE_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+  wikipedia:    { label: 'WIKI',   bg: 'bg-navy-900 dark:bg-white', text: 'text-white dark:text-navy-900' },
+  reddit:       { label: 'REDDIT', bg: 'bg-orange-500',             text: 'text-white' },
+  hackernews:   { label: 'HN',     bg: 'bg-amber-500',              text: 'text-white' },
+  techcrunch:   { label: 'TC',     bg: 'bg-green-600',              text: 'text-white' },
+  medium:       { label: 'MEDIUM', bg: 'bg-gray-900',               text: 'text-white' },
+  arxiv:        { label: 'ARXIV',  bg: 'bg-violet-700',             text: 'text-white' },
+  nasa:         { label: 'NASA',   bg: 'bg-blue-900',               text: 'text-white' },
+  sep:          { label: 'SEP',    bg: 'bg-indigo-700',             text: 'text-white' },
+  stackexchange:{ label: 'SE',     bg: 'bg-orange-600',             text: 'text-white' },
+  owid:         { label: 'OWID',   bg: 'bg-teal-600',               text: 'text-white' },
+  worldbank:    { label: 'WB',     bg: 'bg-sky-700',                text: 'text-white' },
+  gutenberg:    { label: 'BOOK',   bg: 'bg-amber-700',              text: 'text-white' },
+};
 
 function formatScore(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
@@ -52,11 +61,8 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
   function handleCta(e: React.MouseEvent) {
     e.stopPropagation();
     const src = article.source ?? 'wikipedia';
-    if (src === 'reddit' || src === 'hackernews') {
-      window.open(article.pageUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      navigate(`/article/${encodeURIComponent(article.wikiTitle)}`);
-    }
+    const slug = src === 'wikipedia' ? article.wikiTitle : article.title;
+    navigate(`/article/${encodeURIComponent(slug)}`, { state: { article } });
   }
 
   const imageUrl  = article.thumbnailUrl || article.imageUrl;
@@ -64,7 +70,6 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
   const srcCfg    = SOURCE_CONFIG[source] ?? SOURCE_CONFIG.wikipedia;
   const PREV_LEN  = 280;
   const shortText = article.extract.slice(0, PREV_LEN) + (article.extract.length > PREV_LEN ? '…' : '');
-  const ctaLabel  = source === 'hackernews' ? 'Read article' : source === 'reddit' ? 'View post' : 'Dig deeper';
 
   return (
     <motion.div
@@ -134,7 +139,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
           <div className="border-t border-slate-100 dark:border-navy-800 mb-4" />
 
           {/* Extract */}
-          {article.extract ? (
+          {article.extract && (
             <>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                 {expanded ? article.extract : shortText}
@@ -146,8 +151,6 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
                 </button>
               )}
             </>
-          ) : (
-            <p className="text-slate-400 dark:text-slate-600 text-sm italic mb-3">Tap to read the full article →</p>
           )}
 
           {/* Did you know */}
@@ -178,8 +181,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
           {/* Dig deeper CTA — tappable, not swipe-blocked */}
           <button onClick={handleCta}
             className="mt-5 w-full flex items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-navy-900 dark:bg-white text-white dark:text-navy-900 font-bold text-sm">
-            {ctaLabel} →
-            {(source === 'reddit' || source === 'hackernews') && <ArrowUpRight size={14} strokeWidth={2.5} />}
+            Dig deeper →
           </button>
         </div>
       </div>
