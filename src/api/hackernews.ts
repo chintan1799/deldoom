@@ -30,8 +30,8 @@ export async function fetchHNArticle(
     const params = new URLSearchParams({
       tags: 'story',
       query: tag,
-      numericFilters: 'points>30',
-      hitsPerPage: '20',
+      numericFilters: 'points>50',
+      hitsPerPage: '30',
     });
     const res = await fetch(
       `https://hn.algolia.com/api/v1/search?${params}`
@@ -39,14 +39,18 @@ export async function fetchHNArticle(
     if (!res.ok) return null;
 
     const json: AlgoliaResponse = await res.json();
-    const hits = json.hits.filter((h) => h.url && h.title.length > 15);
+    const hits = json.hits.filter((h) => {
+      if (!h.url || h.title.length <= 15) return false;
+      const text = h.story_text ? h.story_text.replace(/<[^>]+>/g, '').trim() : '';
+      return text.length > 100;
+    });
 
     if (hits.length === 0) return null;
 
     const hit = pickRandom(hits);
 
     const extract = hit.story_text
-      ? hit.story_text.replace(/<[^>]+>/g, '').slice(0, 400).trim()
+      ? hit.story_text.replace(/<[^>]+>/g, '').slice(0, 500).trim()
       : '';
 
     return {

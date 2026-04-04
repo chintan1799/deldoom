@@ -9,6 +9,13 @@ export interface InterestCategory {
   wikipediaCategories: string[];
   redditSubs?: string[];
   hnTags?: string[];
+  mediumTags?: string[];
+  arxivCategories?: string[];
+  stackExchangeSite?: string;
+  seStackTags?: string[];
+  gutenbergTopics?: string[];
+  hasSep?: boolean;
+  hasOwid?: boolean;
 }
 
 export interface Article {
@@ -25,7 +32,8 @@ export interface Article {
   interestEmoji: string;
   interestColor: string;
   readingTimeMin?: number;
-  source?: 'wikipedia' | 'reddit' | 'hackernews';
+  source?: 'wikipedia' | 'reddit' | 'hackernews' | 'techcrunch' | 'medium'
+         | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg';
   author?: string;
   publishedAt?: string;
   score?: number;

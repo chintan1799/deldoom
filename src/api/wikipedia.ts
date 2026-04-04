@@ -5,6 +5,26 @@ const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1';
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 const AGENT = 'deldoom/0.2 (microlearning app)';
 
+// ── Blocklist: skip articles that everyone already knows ──────────────────────
+const BASIC_TOPICS_BLOCKLIST = new Set([
+  'internet', 'email', 'smartphone', 'website', 'password', 'mobile phone',
+  'dual sim', 'laptop', 'television', 'keyboard', 'computer', 'mouse', 'printer',
+  'router', 'software', 'hardware', 'database', 'server', 'file', 'folder',
+  'browser', 'web browser', 'app', 'application', 'download', 'upload',
+  'streaming', 'wi-fi', 'wifi', 'bluetooth', 'usb', 'battery', 'charger',
+  'screen', 'camera', 'microphone', 'speaker', 'button', 'switch', 'cable',
+  'network', 'login', 'username', 'search engine', 'social media', 'notification',
+  'emoji', 'telephone', 'phone', 'radio', 'newspaper', 'book', 'map',
+  'clock', 'calendar', 'calculator', 'alarm', 'wallet', 'card', 'coin',
+  'money', 'bank', 'car', 'bus', 'train', 'bicycle', 'plane', 'boat',
+  'road', 'bridge', 'building', 'house', 'school', 'hospital', 'airport',
+  'market', 'shop', 'restaurant', 'hotel', 'museum', 'library', 'park',
+  'electricity', 'water', 'fire', 'air', 'soil', 'wood', 'plastic', 'glass',
+  'paper', 'pen', 'pencil', 'desk', 'chair', 'table', 'door', 'window',
+  'television set', 'mobile device', 'personal computer', 'tablet computer',
+  'operating system', 'world wide web', 'hyperlink', 'url',
+]);
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -17,7 +37,15 @@ const INTERESTING_SIGNALS = [
   /\b(despite|however|although|contrary|instead|unexpectedly|ironically)\b/i,
 ];
 
-function extractInterestingFact(extract: string): string | undefined {
+const CONTEXT_PRONOUNS = /^(It|They|He|She|This|That|These|Those)\b/;
+
+function fixPronouns(sentence: string, title: string): string {
+  if (!CONTEXT_PRONOUNS.test(sentence)) return sentence;
+  // Replace the leading pronoun with the article title
+  return sentence.replace(CONTEXT_PRONOUNS, title);
+}
+
+function extractInterestingFact(extract: string, title: string): string | undefined {
   if (!extract) return undefined;
   const sentences = extract
     .split(/(?<=[.!?])\s+/)
@@ -25,15 +53,17 @@ function extractInterestingFact(extract: string): string | undefined {
     .filter((s) => s.length > 40 && s.length < 300);
 
   // Skip the first sentence (usually just a definition)
-  const candidates = sentences.slice(1);
+  const candidates = sentences.slice(1).map((s) => fixPronouns(s, title));
 
   for (const signal of INTERESTING_SIGNALS) {
     const match = candidates.find((s) => signal.test(s));
-    if (match) return match;
+    if (match && match.length >= 60 && match.length <= 280) return match;
   }
 
-  // Fallback to second sentence if available
-  return candidates[0];
+  // Fallback: second sentence if it's a decent length
+  const fallback = candidates[0];
+  if (fallback && fallback.length >= 60 && fallback.length <= 280) return fallback;
+  return undefined;
 }
 
 // ── Category members ──────────────────────────────────────────────────────────
@@ -80,7 +110,7 @@ function mapSummaryToArticle(summary: WikiSummaryResponse, interestId: string): 
     title: summary.title,
     description: summary.description,
     extract: summary.extract,
-    interestingFact: extractInterestingFact(summary.extract),
+    interestingFact: extractInterestingFact(summary.extract, summary.title),
     imageUrl: summary.originalimage?.source,
     thumbnailUrl: summary.thumbnail?.source,
     pageUrl:
@@ -112,17 +142,28 @@ export async function fetchRandomArticleForInterests(interestIds: string[]): Pro
       const members = await fetchCategoryMembers(category);
       if (!members.length) continue;
 
-      const filtered = members.filter(
-        (m) =>
-          !m.title.startsWith('List of') &&
-          !m.title.includes('(disambiguation)') &&
-          !m.title.startsWith('Index of')
-      );
+      const filtered = members.filter((m) => {
+        const t = m.title;
+        const lower = t.toLowerCase();
+        return (
+          !t.startsWith('List of') &&
+          !t.includes('(disambiguation)') &&
+          !t.startsWith('Index of') &&
+          t.length >= 5 &&
+          !BASIC_TOPICS_BLOCKLIST.has(lower)
+        );
+      });
 
       const candidate = pickRandom(filtered.length ? filtered : members);
       const summary = await fetchSummary(candidate.title);
 
-      if (summary.extract && summary.extract.length > 100) {
+      // Skip if basic description pattern: "type of X" with short title
+      const isGenericDesc =
+        summary.description &&
+        /^(a |an |the )?(type|form|kind|part|method|system|process) of\b/i.test(summary.description) &&
+        summary.title.split(' ').length <= 3;
+
+      if (summary.extract && summary.extract.length > 300 && !isGenericDesc) {
         return mapSummaryToArticle(summary, interestId);
       }
     } catch {

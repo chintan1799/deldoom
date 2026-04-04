@@ -28,8 +28,8 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 function formatExtract(post: RedditPost['data']): string {
-  if (post.selftext && post.selftext.length > 40) {
-    return post.selftext.slice(0, 400).replace(/\n+/g, ' ').trim();
+  if (post.selftext && post.selftext.replace(/\s/g, '').length > 100) {
+    return post.selftext.slice(0, 500).replace(/\n+/g, ' ').trim();
   }
   return '';
 }
@@ -50,7 +50,7 @@ export async function fetchRedditArticle(
 
   try {
     const res = await fetch(
-      `https://www.reddit.com/r/${sub}/top.json?t=week&limit=30`,
+      `https://www.reddit.com/r/${sub}/top.json?t=all&limit=100`,
       {
         headers: {
           'User-Agent': 'deldoom/1.0 (microlearning app)',
@@ -67,8 +67,10 @@ export async function fetchRedditArticle(
         (p) =>
           !p.stickied &&
           !p.over_18 &&
-          p.score > 30 &&
-          p.title.length > 15
+          p.score > 50 &&
+          p.title.length > 15 &&
+          p.is_self &&
+          p.selftext.replace(/\s/g, '').length > 100
       );
 
     if (posts.length === 0) return null;
