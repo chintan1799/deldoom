@@ -92,7 +92,7 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
     try {
       const article = await trySource();
       // Require non-empty extract
-      if (article && article.extract.trim().length > 80) return article;
+      if (article && article.extract.trim().length > 0) return article;
     } catch {
       // fall through to Wikipedia
     }
