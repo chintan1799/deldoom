@@ -8,6 +8,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ArticleScreen } from './screens/ArticleScreen';
 import { SavedScreen } from './screens/SavedScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { StatsScreen } from './screens/StatsScreen';
 
 function RequireOnboarding({ children }: { children: React.ReactNode }) {
   const onboardingComplete = useAppStore((s) => s.onboardingComplete);
@@ -57,6 +58,14 @@ export default function App() {
           element={
             <RequireOnboarding>
               <SettingsScreen />
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="/stats"
+          element={
+            <RequireOnboarding>
+              <StatsScreen />
             </RequireOnboarding>
           }
         />

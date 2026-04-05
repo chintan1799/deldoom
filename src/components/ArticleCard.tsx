@@ -39,11 +39,16 @@ function formatDate(iso: string) {
 export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }: ArticleCardProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
 
   const x            = useMotionValue(0);
   const rotate       = useTransform(x, [-200, 200], [-6, 6]);
   const saveOpacity  = useTransform(x, [0, 60, 130], [0, 0.9, 1]);
   const skipOpacity  = useTransform(x, [-130, -60, 0], [1, 0.9, 0]);
+  const saveScale    = useTransform(x, [0, 130], [0.6, 1]);
+  const skipScale    = useTransform(x, [-130, 0], [1, 0.6]);
+  const saveOverlay  = useTransform(x, [0, 130], [0, 0.18]);
+  const skipOverlay  = useTransform(x, [-130, 0], [0.18, 0]);
   const controls     = useAnimation();
 
   async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
@@ -65,10 +70,17 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
     navigate(`/article/${encodeURIComponent(slug)}`, { state: { article } });
   }
 
-  const imageUrl  = article.thumbnailUrl || article.imageUrl;
-  const source    = article.source ?? 'wikipedia';
-  const srcCfg    = SOURCE_CONFIG[source] ?? SOURCE_CONFIG.wikipedia;
-  const PREV_LEN  = 280;
+  const sourceImageUrl = article.thumbnailUrl || article.imageUrl;
+  // Unsplash fallback when the article has no image of its own
+  const unsplashUrl = !sourceImageUrl
+    ? `https://source.unsplash.com/800x450/?${encodeURIComponent(article.interestLabel.toLowerCase())}`
+    : null;
+  // Active image: source image, or Unsplash (if not yet failed), or nothing
+  const activeImage = sourceImageUrl || (!imgFailed ? unsplashUrl : null);
+
+  const source  = article.source ?? 'wikipedia';
+  const srcCfg  = SOURCE_CONFIG[source] ?? SOURCE_CONFIG.wikipedia;
+  const PREV_LEN = 280;
   const shortText = article.extract.slice(0, PREV_LEN) + (article.extract.length > PREV_LEN ? '…' : '');
 
   return (
@@ -81,21 +93,36 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
       onDragEnd={handleDragEnd}
       className="fixed inset-0 draggable-card"
     >
-      {/* Save / Skip overlay labels */}
-      <motion.div style={{ opacity: saveOpacity }}
-        className="absolute top-16 right-6 z-20 bg-navy-900 text-white px-4 py-2 rounded-full text-sm font-black shadow-lg pointer-events-none rotate-12">
-        SAVE
+      {/* Full-card color tint overlays (drag feedback) */}
+      <motion.div style={{ opacity: saveOverlay }}
+        className="absolute inset-0 z-10 bg-green-400 pointer-events-none" />
+      <motion.div style={{ opacity: skipOverlay }}
+        className="absolute inset-0 z-10 bg-red-400 pointer-events-none" />
+
+      {/* Stamped SAVE badge */}
+      <motion.div style={{ opacity: saveOpacity, scale: saveScale }}
+        className="absolute top-20 right-5 z-20 border-[3px] border-green-500 text-green-500 bg-white/90 dark:bg-navy-950/90 px-4 py-2 rounded-xl rotate-[14deg] flex items-center gap-2 shadow-lg pointer-events-none">
+        <Bookmark size={18} strokeWidth={3} />
+        <span className="text-lg font-black tracking-wider">SAVE</span>
       </motion.div>
-      <motion.div style={{ opacity: skipOpacity }}
-        className="absolute top-16 left-6 z-20 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-black shadow-lg pointer-events-none -rotate-12">
-        SKIP
+
+      {/* Stamped SKIP badge */}
+      <motion.div style={{ opacity: skipOpacity, scale: skipScale }}
+        className="absolute top-20 left-5 z-20 border-[3px] border-red-500 text-red-500 bg-white/90 dark:bg-navy-950/90 px-4 py-2 rounded-xl -rotate-[14deg] flex items-center gap-2 shadow-lg pointer-events-none">
+        <X size={18} strokeWidth={3} />
+        <span className="text-lg font-black tracking-wider">SKIP</span>
       </motion.div>
 
       {/* Hero image / gradient banner */}
-      {imageUrl ? (
+      {activeImage ? (
         <div className="absolute inset-x-0 top-0 h-[48vh]">
-          <img src={imageUrl} alt={article.title}
-            className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={activeImage}
+            alt={article.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={() => setImgFailed(true)}
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white dark:to-navy-950" />
         </div>
       ) : (
@@ -111,7 +138,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
 
       {/* Scrollable content */}
       <div className="absolute inset-0 overflow-y-auto overscroll-contain"
-        style={{ paddingTop: imageUrl ? '38vh' : '14vh', paddingBottom: '120px' }}>
+        style={{ paddingTop: activeImage ? '38vh' : '14vh', paddingBottom: '120px' }}>
         <div className="bg-white dark:bg-navy-950 rounded-t-[28px] min-h-full px-5 pt-5 pb-4">
 
           {/* Source + category row */}

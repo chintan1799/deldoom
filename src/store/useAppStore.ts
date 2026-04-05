@@ -69,8 +69,9 @@ export const useAppStore = create<AppState & AppActions>()(
 
       addToHistory: (article) =>
         set((state) => {
-          const filtered = state.history.filter((a) => a.wikiTitle !== article.wikiTitle);
-          return { history: [article, ...filtered].slice(0, 100) };
+          const entry = { ...article, viewedAt: new Date().toISOString() };
+          const filtered = state.history.filter((a) => a.pageUrl !== entry.pageUrl);
+          return { history: [entry, ...filtered].slice(0, 200) };
         }),
 
       clearHistory: () => set({ history: [] }),

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Dices } from 'lucide-react';
+import { Menu, Dices, RotateCcw } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { useArticle } from '../hooks/useArticle';
 import { ArticleCard } from '../components/ArticleCard';
@@ -27,7 +27,7 @@ function SkeletonFull() {
 
 export function HomeScreen() {
   const { selectedInterests, saveArticle, addToHistory, updateStreak, rollCount, incrementRollCount, isMilestone } = useAppStore();
-  const { article, loading, error, roll } = useArticle(selectedInterests);
+  const { article, loading, error, roll, goBack, canGoBack } = useArticle(selectedInterests);
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -69,8 +69,14 @@ export function HomeScreen() {
           <Dices size={13} className="text-navy-900 dark:text-white" strokeWidth={2} />
           <span className="text-xs font-black text-navy-900 dark:text-white tracking-tight">deldoom</span>
         </div>
-        {/* Right spacer matches left button width */}
-        <div className="w-10" />
+        {/* Roll-back button — visible only when a previous card exists */}
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={goBack}
+          className={`w-10 h-10 rounded-full bg-white/80 dark:bg-navy-800/80 backdrop-blur-sm shadow flex items-center justify-center transition-opacity duration-200 ${canGoBack ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <RotateCcw size={18} strokeWidth={2} className="text-navy-900 dark:text-white" />
+        </motion.button>
       </div>
 
       {/* Card / loading / error area */}

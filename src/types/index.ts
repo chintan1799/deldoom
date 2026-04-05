@@ -38,6 +38,7 @@ export interface Article {
   publishedAt?: string;
   score?: number;
   subreddit?: string;
+  viewedAt?: string;
 }
 
 export interface RelatedArticle {

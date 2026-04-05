@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Compass, Bookmark, Settings, Moon, Sun, Flame, Dices } from 'lucide-react';
+import { X, Compass, Bookmark, Settings, Moon, Sun, Flame, Dices, BarChart2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 interface DrawerMenuProps {
@@ -29,9 +29,10 @@ export function DrawerMenu({ open, onClose }: DrawerMenuProps) {
   }
 
   const navItems = [
-    { path: '/home',     Icon: Compass,  label: 'Discover' },
-    { path: '/saved',    Icon: Bookmark, label: 'Saved'    },
-    { path: '/settings', Icon: Settings, label: 'Settings' },
+    { path: '/home',     Icon: Compass,   label: 'Discover'  },
+    { path: '/saved',    Icon: Bookmark,  label: 'Saved'     },
+    { path: '/stats',    Icon: BarChart2, label: 'My Stats'  },
+    { path: '/settings', Icon: Settings,  label: 'Settings'  },
   ];
 
   return (
