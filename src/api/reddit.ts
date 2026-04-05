@@ -28,10 +28,10 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 function formatExtract(post: RedditPost['data']): string {
-  if (post.selftext && post.selftext.replace(/\s/g, '').length > 100) {
+  if (post.selftext && post.selftext.replace(/\s/g, '').length > 30) {
     return post.selftext.slice(0, 500).replace(/\n+/g, ' ').trim();
   }
-  return '';
+  return post.title;
 }
 
 function getThumbnail(post: RedditPost['data']): string | undefined {
@@ -68,9 +68,7 @@ export async function fetchRedditArticle(
           !p.stickied &&
           !p.over_18 &&
           p.score > 50 &&
-          p.title.length > 15 &&
-          p.is_self &&
-          p.selftext.replace(/\s/g, '').length > 100
+          p.title.length > 15
       );
 
     if (posts.length === 0) return null;
