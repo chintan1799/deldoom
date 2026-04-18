@@ -1,24 +1,9 @@
-import { CuriosityReportCard, CuriosityReportData } from '../components/CuriosityReportCard';
-
-const MOCK: CuriosityReportData = {
-  userName: 'Your',
-  weekLabel: 'Week of Apr 14',
-  dna: [
-    { label: 'Philosopher',  pct: 42, color: '#7F77DD' },
-    { label: 'Scientist',    pct: 33, color: '#1D9E75' },
-    { label: 'Historian',    pct: 25, color: '#D85A30' },
-  ],
-  topInterests: [
-    { interest: 'Philosophy',   count: 12, color: '#7F77DD' },
-    { interest: 'Neuroscience', count:  9, color: '#F59E0B' },
-    { interest: 'Mythology',    count:  6, color: '#EF9F27' },
-    { interest: 'Physics',      count:  4, color: '#6366F1' },
-  ],
-  stats: { ideasAbsorbed: 31, streak: 7, saved: 12 },
-  mostCuriousAbout: 'The unreasonable effectiveness of mathematics',
-};
+import { CuriosityReportCard } from '../components/CuriosityReportCard';
+import { useCuriosityReport } from '../hooks/useCuriosityReport';
 
 export function CardPreviewScreen() {
+  const data = useCuriosityReport();
+
   return (
     <div
       style={{
@@ -39,13 +24,13 @@ export function CardPreviewScreen() {
           <div style={{ fontFamily: 'Inter', fontWeight: 700, color: '#0f172a', marginBottom: 8, textAlign: 'center' }}>
             Light
           </div>
-          <CuriosityReportCard theme="light" data={MOCK} />
+          <CuriosityReportCard theme="light" data={data} />
         </div>
         <div>
           <div style={{ fontFamily: 'Inter', fontWeight: 700, color: '#f8fafc', marginBottom: 8, textAlign: 'center' }}>
             Dark
           </div>
-          <CuriosityReportCard theme="dark" data={MOCK} />
+          <CuriosityReportCard theme="dark" data={data} />
         </div>
       </div>
     </div>
