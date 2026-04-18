@@ -20,27 +20,61 @@ interface RedditPost {
 }
 
 interface RedditListing {
-  data: {
-    children: RedditPost[];
-  };
+  data: { children: RedditPost[] };
 }
+
+type PostData = RedditPost['data'];
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-async function fetchTopRedditComment(
-  subreddit: string,
-  id: string
-): Promise<string | null> {
+// Per-sub post cache — avoids re-fetching the same subreddit within 15 min
+const _subCache = new Map<string, { posts: PostData[]; expires: number }>();
+
+async function fetchSubPosts(sub: string): Promise<PostData[]> {
+  const cached = _subCache.get(sub);
+  if (cached && Date.now() < cached.expires) return cached.posts;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
   try {
-    const timeoutPromise = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), 2000)
+    // old.reddit.com is more reliably CORS-permissive than www.reddit.com
+    const res = await fetch(
+      `https://old.reddit.com/r/${sub}/top.json?t=month&limit=100`,
+      { headers: { Accept: 'application/json' }, signal: controller.signal }
     );
-    const fetchPromise = fetch(
-      `https://www.reddit.com/r/${subreddit}/comments/${id}.json?limit=5&sort=top&depth=1`,
-      { headers: { 'User-Agent': 'deldoom/1.0 (microlearning app)' } }
-    ).then(async (res) => {
+    if (!res.ok) return [];
+
+    const json: RedditListing = await res.json();
+    const posts = (json?.data?.children ?? [])
+      .map((c) => c.data)
+      .filter((p) => {
+        if (p.stickied || p.over_18) return false;
+        const hasText = p.selftext && p.selftext.replace(/\s/g, '').length > 100;
+        const highEngagement = p.title.length > 30 && p.score > 100 && p.num_comments > 20;
+        return hasText || highEngagement;
+      });
+
+    _subCache.set(sub, { posts, expires: Date.now() + 15 * 60 * 1000 });
+    return posts;
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function fetchTopRedditComment(subreddit: string, id: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    try {
+      const res = await fetch(
+        `https://old.reddit.com/r/${subreddit}/comments/${id}.json?limit=5&sort=top&depth=1`,
+        { headers: { Accept: 'application/json' }, signal: controller.signal }
+      );
       if (!res.ok) return null;
       const data = await res.json();
       const comments: Array<{ data: { body?: string; stickied?: boolean } }> =
@@ -52,29 +86,26 @@ async function fetchTopRedditComment(
         }
       }
       return null;
-    });
-    return await Promise.race([fetchPromise, timeoutPromise]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     return null;
   }
 }
 
-async function buildRedditExtract(post: RedditPost['data']): Promise<string> {
+async function buildRedditExtract(post: PostData): Promise<string> {
   if (post.selftext && post.selftext.replace(/\s/g, '').length > 100) {
     return post.selftext.slice(0, 500).replace(/\n+/g, ' ').trim();
   }
-  // Link post — synthesized discussion preview
   const header = `💬 ${post.num_comments} comments · ${post.score} upvotes\n\n${post.title}`;
   const topComment = await fetchTopRedditComment(post.subreddit, post.id);
-  return topComment
-    ? `${header}\n\nTop of the thread: ${topComment}`
-    : header;
+  return topComment ? `${header}\n\nTop of the thread: ${topComment}` : header;
 }
 
-function getThumbnail(post: RedditPost['data']): string | undefined {
+function getThumbnail(post: PostData): string | undefined {
   const t = post.thumbnail;
-  if (t && t.startsWith('http')) return t;
-  return undefined;
+  return t?.startsWith('http') ? t : undefined;
 }
 
 export async function fetchRedditArticle(
@@ -83,63 +114,38 @@ export async function fetchRedditArticle(
   const subs = interest.redditSubs;
   if (!subs || subs.length === 0) return null;
 
-  // Try up to 3 different subs before giving up on Reddit entirely
-  const triedSubs = new Set<string>();
-  for (let subAttempt = 0; subAttempt < Math.min(3, subs.length); subAttempt++) {
-    const available = subs.filter((s) => !triedSubs.has(s));
-    if (!available.length) break;
-    const sub = pickRandom(available);
-    triedSubs.add(sub);
+  // Shuffle sub order so we don't always hit the same one first
+  const shuffled = [...subs].sort(() => Math.random() - 0.5);
 
-    try {
-      const res = await fetch(
-        `https://www.reddit.com/r/${sub}/top.json?t=month&limit=100`,
-        { headers: { Accept: 'application/json' } }
-      );
-      if (!res.ok) continue;
+  for (const sub of shuffled.slice(0, 3)) {
+    const posts = await fetchSubPosts(sub);
+    if (!posts.length) continue;
 
-      const json: RedditListing = await res.json();
-      const posts = json.data.children
-        .map((c) => c.data)
-        .filter((p) => {
-          if (p.stickied || p.over_18) return false;
-          const hasText = p.selftext && p.selftext.replace(/\s/g, '').length > 100;
-          const highEngagement =
-            p.title.length > 30 && p.score > 100 && p.num_comments > 20;
-          return hasText || highEngagement;
-        });
+    const post = pickRandom(posts);
+    const extract = await buildRedditExtract(post);
+    const pageUrl = post.is_self
+      ? `https://www.reddit.com${post.permalink}`
+      : post.url;
 
-      if (posts.length === 0) continue;
-
-      const post = pickRandom(posts);
-      const extract = await buildRedditExtract(post);
-
-      const pageUrl = post.is_self
-        ? `https://www.reddit.com${post.permalink}`
-        : post.url;
-
-      return {
-        id: `reddit_${post.id}`,
-        title: post.title,
-        description: `r/${post.subreddit}`,
-        extract,
-        interestingFact: undefined,
-        thumbnailUrl: getThumbnail(post),
-        pageUrl,
-        wikiTitle: '',
-        interestId: interest.id,
-        interestLabel: interest.label,
-        interestEmoji: interest.emoji,
-        interestColor: interest.color,
-        source: 'reddit',
-        author: `u/${post.author}`,
-        publishedAt: new Date(post.created_utc * 1000).toISOString(),
-        score: post.score,
-        subreddit: `r/${post.subreddit}`,
-      };
-    } catch {
-      continue;
-    }
+    return {
+      id: `reddit_${post.id}`,
+      title: post.title,
+      description: `r/${post.subreddit}`,
+      extract,
+      interestingFact: undefined,
+      thumbnailUrl: getThumbnail(post),
+      pageUrl,
+      wikiTitle: '',
+      interestId: interest.id,
+      interestLabel: interest.label,
+      interestEmoji: interest.emoji,
+      interestColor: interest.color,
+      source: 'reddit',
+      author: `u/${post.author}`,
+      publishedAt: new Date(post.created_utc * 1000).toISOString(),
+      score: post.score,
+      subreddit: `r/${post.subreddit}`,
+    };
   }
   return null;
 }

@@ -26,15 +26,15 @@ type Source =
   | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg'
   | 'finshots' | 'aeon' | 'marginalian' | 'atlasobscura';
 
-// Interest lists for sources that don't have a per-interest flag on InterestCategory
 const NASA_INTERESTS = new Set(['astronomy', 'space_tech', 'earth_science', 'climate', 'physics']);
 const TC_INTERESTS = new Set(['ai', 'coding', 'robotics', 'space_tech', 'cybersecurity',
   'gadgets', 'internet', 'blockchain', 'biotech', 'entrepreneurship', 'finance']);
 const WB_INTERESTS = new Set(['economics', 'finance', 'politics', 'sociology', 'climate', 'medicine', 'nutrition']);
 
-// Tier 1: always eligible for any interest. Tier 2: only if the interest has that source mapped.
 const TIER1_WEIGHT = { wikipedia: 25, reddit: 18, hackernews: 12 };
 const TIER2_WEIGHT = 10;
+// How long to wait for any single source before giving up on it
+const SOURCE_TIMEOUT_MS = 5000;
 
 function buildSourcePool(
   interest: InterestCategory,
@@ -43,42 +43,47 @@ function buildSourcePool(
 ): [Source, number][] {
   const pool: [Source, number][] = [];
 
-  // Recency bias: if the last 3 returned sources were all Wikipedia, block it this roll.
   const last3 = recentSources.slice(-3);
   const wikiBlocked = last3.length === 3 && last3.every((s) => s === 'wikipedia');
 
-  // Tier 1 — always in the pool
   if (!excluded.has('wikipedia') && !wikiBlocked) pool.push(['wikipedia', TIER1_WEIGHT.wikipedia]);
-  if (!excluded.has('reddit')) pool.push(['reddit', TIER1_WEIGHT.reddit]);
-  if (!excluded.has('hackernews')) pool.push(['hackernews', TIER1_WEIGHT.hackernews]);
+  if (!excluded.has('reddit'))                     pool.push(['reddit',    TIER1_WEIGHT.reddit]);
+  if (!excluded.has('hackernews'))                 pool.push(['hackernews',TIER1_WEIGHT.hackernews]);
 
-  // Tier 2 — mapped specialty sources only
-  if (!excluded.has('medium') && (interest.mediumTags?.length ?? 0) > 0) pool.push(['medium', TIER2_WEIGHT]);
-  if (!excluded.has('arxiv') && (interest.arxivCategories?.length ?? 0) > 0) pool.push(['arxiv', TIER2_WEIGHT]);
-  if (!excluded.has('stackexchange') && interest.stackExchangeSite) pool.push(['stackexchange', TIER2_WEIGHT]);
-  if (!excluded.has('sep') && interest.hasSep) pool.push(['sep', TIER2_WEIGHT]);
-  if (!excluded.has('owid') && interest.hasOwid) pool.push(['owid', TIER2_WEIGHT]);
-  if (!excluded.has('gutenberg') && (interest.gutenbergTopics?.length ?? 0) > 0) pool.push(['gutenberg', TIER2_WEIGHT]);
-  if (!excluded.has('finshots') && interest.hasFinshots) pool.push(['finshots', TIER2_WEIGHT]);
-  if (!excluded.has('aeon') && interest.hasAeon) pool.push(['aeon', TIER2_WEIGHT]);
-  if (!excluded.has('marginalian') && interest.hasMarginalian) pool.push(['marginalian', TIER2_WEIGHT]);
-  if (!excluded.has('atlasobscura') && interest.hasAtlasObscura) pool.push(['atlasobscura', TIER2_WEIGHT]);
-  if (!excluded.has('nasa') && NASA_INTERESTS.has(interest.id)) pool.push(['nasa', TIER2_WEIGHT]);
-  if (!excluded.has('techcrunch') && TC_INTERESTS.has(interest.id)) pool.push(['techcrunch', TIER2_WEIGHT]);
-  if (!excluded.has('worldbank') && WB_INTERESTS.has(interest.id)) pool.push(['worldbank', TIER2_WEIGHT]);
+  if (!excluded.has('medium')       && (interest.mediumTags?.length ?? 0) > 0)       pool.push(['medium',       TIER2_WEIGHT]);
+  if (!excluded.has('arxiv')        && (interest.arxivCategories?.length ?? 0) > 0)   pool.push(['arxiv',        TIER2_WEIGHT]);
+  if (!excluded.has('stackexchange')&& interest.stackExchangeSite)                     pool.push(['stackexchange',TIER2_WEIGHT]);
+  if (!excluded.has('sep')          && interest.hasSep)                               pool.push(['sep',          TIER2_WEIGHT]);
+  if (!excluded.has('owid')         && interest.hasOwid)                              pool.push(['owid',         TIER2_WEIGHT]);
+  if (!excluded.has('gutenberg')    && (interest.gutenbergTopics?.length ?? 0) > 0)   pool.push(['gutenberg',    TIER2_WEIGHT]);
+  if (!excluded.has('finshots')     && interest.hasFinshots)                           pool.push(['finshots',     TIER2_WEIGHT]);
+  if (!excluded.has('aeon')         && interest.hasAeon)                              pool.push(['aeon',         TIER2_WEIGHT]);
+  if (!excluded.has('marginalian')  && interest.hasMarginalian)                       pool.push(['marginalian',  TIER2_WEIGHT]);
+  if (!excluded.has('atlasobscura') && interest.hasAtlasObscura)                      pool.push(['atlasobscura', TIER2_WEIGHT]);
+  if (!excluded.has('nasa')         && NASA_INTERESTS.has(interest.id))               pool.push(['nasa',         TIER2_WEIGHT]);
+  if (!excluded.has('techcrunch')   && TC_INTERESTS.has(interest.id))                 pool.push(['techcrunch',   TIER2_WEIGHT]);
+  if (!excluded.has('worldbank')    && WB_INTERESTS.has(interest.id))                 pool.push(['worldbank',    TIER2_WEIGHT]);
 
   return pool;
 }
 
-function weightedPick(pool: [Source, number][]): Source | null {
-  if (!pool.length) return null;
-  const total = pool.reduce((s, [, w]) => s + w, 0);
-  let r = Math.random() * total;
-  for (const [s, w] of pool) {
-    r -= w;
-    if (r <= 0) return s;
+// Weighted pick without replacement — returns up to n sources
+function weightedPickN(pool: [Source, number][], n: number): Source[] {
+  const picks: Source[] = [];
+  const remaining = [...pool];
+  while (picks.length < n && remaining.length > 0) {
+    const total = remaining.reduce((s, [, w]) => s + w, 0);
+    let r = Math.random() * total;
+    let chosen = remaining[remaining.length - 1][0];
+    for (const [src, w] of remaining) {
+      r -= w;
+      if (r <= 0) { chosen = src; break; }
+    }
+    picks.push(chosen);
+    const idx = remaining.findIndex(([s]) => s === chosen);
+    remaining.splice(idx, 1);
   }
-  return pool[pool.length - 1][0];
+  return picks;
 }
 
 async function invokeSource(source: Source, interest: InterestCategory): Promise<Article | null> {
@@ -102,6 +107,23 @@ async function invokeSource(source: Source, interest: InterestCategory): Promise
   }
 }
 
+// Races a source against a hard timeout; throws on timeout, null, empty extract, or dup
+async function trySource(
+  source: Source,
+  interest: InterestCategory,
+  seenIds: string[]
+): Promise<Article> {
+  const result = await Promise.race([
+    invokeSource(source, interest),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), SOURCE_TIMEOUT_MS)
+    ),
+  ]);
+  if (!result || !result.extract.trim()) throw new Error('empty');
+  if (seenIds.includes(result.id))       throw new Error('dup');
+  return result;
+}
+
 export async function fetchRandomArticle(
   selectedInterestIds: string[],
   seenIds: string[] = [],
@@ -113,50 +135,30 @@ export async function fetchRandomArticle(
 
   if (!interest) return fetchRandomArticleForInterests(ids);
 
-  // failed: source returned null/threw — exclude it from future picks this roll
-  // dupCount: per-source dup counter — only exclude after 3 dupes from same source
-  const failed = new Set<Source>();
-  const dupCount = new Map<Source, number>();
-  const MAX_SOURCE_ATTEMPTS = 8;
+  const tried = new Set<Source>();
+  const BATCH_SIZE = 3;   // sources tried in parallel per round
+  const MAX_BATCHES = 3;  // max 3 rounds = 9 source attempts total
 
-  for (let attempt = 0; attempt < MAX_SOURCE_ATTEMPTS; attempt++) {
-    const pool = buildSourcePool(interest, failed, recentSources);
+  for (let batch = 0; batch < MAX_BATCHES; batch++) {
+    const pool = buildSourcePool(interest, tried, recentSources);
     if (!pool.length) break;
 
-    const source = weightedPick(pool);
-    if (!source) break;
+    const picks = weightedPickN(pool, BATCH_SIZE);
+    picks.forEach((s) => tried.add(s));
 
     if (import.meta.env.DEV) {
       // DEV: remove after confirming distribution is balanced
-      console.log(
-        `[deldoom] pick ${source} | interest: ${interestId} | attempt ${attempt + 1} | failed: [${[...failed].join(',') || '-'}] | recent: [${recentSources.join(',') || '-'}]`
-      );
+      console.log(`[deldoom] batch ${batch + 1} [${picks.join(', ')}] | interest: ${interestId}`);
     }
 
-    try {
-      const result = await invokeSource(source, interest);
+    // Fire all picks in parallel; return the first one that succeeds
+    const result = await Promise.any(
+      picks.map((s) => trySource(s, interest, seenIds))
+    ).catch(() => null);
 
-      if (!result || !result.extract.trim()) {
-        // Source can't provide anything useful — exclude it
-        failed.add(source);
-        continue;
-      }
-
-      if (seenIds.includes(result.id)) {
-        // Dup — count against this source; exclude only after 3 dupes
-        const n = (dupCount.get(source) ?? 0) + 1;
-        dupCount.set(source, n);
-        if (import.meta.env.DEV) console.log(`[deldoom] dup ${result.id} (${n}/3)`);
-        if (n >= 3) failed.add(source);
-        continue;
-      }
-
-      return result;
-    } catch {
-      failed.add(source);
-    }
+    if (result) return result;
   }
 
-  // Absolute last resort — generic Wikipedia across all selected interests
+  // Final fallback — Wikipedia is always available
   return fetchRandomArticleForInterests(ids);
 }
