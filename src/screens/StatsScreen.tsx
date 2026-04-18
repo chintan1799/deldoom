@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Flame, Dices, Bookmark, BarChart2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Flame, Dices, Bookmark, BarChart2, Sparkles, Share2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { ShareCuriosityModal } from '../components/ShareCuriosityModal';
 
 const SOURCE_LABELS: Record<string, string> = {
   wikipedia:    'Wikipedia',
@@ -55,6 +56,7 @@ function isSameDay(dateStr: string, daysAgo: number) {
 export function StatsScreen() {
   const navigate = useNavigate();
   const { history, savedArticles, rollCount, streak } = useAppStore();
+  const [shareOpen, setShareOpen] = useState(false);
 
   const stats = useMemo(() => {
     const total = history.length;
@@ -157,10 +159,18 @@ export function StatsScreen() {
           className="w-9 h-9 rounded-xl bg-white dark:bg-navy-800 flex items-center justify-center shadow-sm">
           <ArrowLeft size={18} strokeWidth={2} className="text-navy-900 dark:text-white" />
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <BarChart2 size={18} strokeWidth={2} className="text-navy-900 dark:text-white" />
           <h1 className="font-black text-lg text-navy-900 dark:text-white tracking-tight">My Stats</h1>
         </div>
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setShareOpen(true)}
+          className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-navy-900 dark:bg-white text-white dark:text-navy-900 shadow-sm font-bold text-xs"
+        >
+          <Share2 size={14} strokeWidth={2.5} />
+          Share
+        </motion.button>
       </div>
 
       <motion.div
@@ -300,6 +310,8 @@ export function StatsScreen() {
           </motion.div>
         )}
       </motion.div>
+
+      <ShareCuriosityModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }
