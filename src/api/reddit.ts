@@ -2,6 +2,8 @@ import type { Article, InterestCategory } from '../types';
 
 interface RedditPost {
   data: {
+    id: string;
+    num_comments: number;
     title: string;
     selftext: string;
     url: string;
@@ -27,11 +29,46 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function formatExtract(post: RedditPost['data']): string {
-  if (post.selftext && post.selftext.replace(/\s/g, '').length > 30) {
+async function fetchTopRedditComment(
+  subreddit: string,
+  id: string
+): Promise<string | null> {
+  try {
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 2000)
+    );
+    const fetchPromise = fetch(
+      `https://www.reddit.com/r/${subreddit}/comments/${id}.json?limit=5&sort=top&depth=1`,
+      { headers: { 'User-Agent': 'deldoom/1.0 (microlearning app)' } }
+    ).then(async (res) => {
+      if (!res.ok) return null;
+      const data = await res.json();
+      const comments: Array<{ data: { body?: string; stickied?: boolean } }> =
+        data?.[1]?.data?.children ?? [];
+      for (const c of comments) {
+        const body = c?.data?.body ?? '';
+        if (!c?.data?.stickied && body.replace(/\s/g, '').length > 20) {
+          return body.slice(0, 500).replace(/\n+/g, ' ').trim();
+        }
+      }
+      return null;
+    });
+    return await Promise.race([fetchPromise, timeoutPromise]);
+  } catch {
+    return null;
+  }
+}
+
+async function buildRedditExtract(post: RedditPost['data']): Promise<string> {
+  if (post.selftext && post.selftext.replace(/\s/g, '').length > 100) {
     return post.selftext.slice(0, 500).replace(/\n+/g, ' ').trim();
   }
-  return post.title;
+  // Link post — synthesized discussion preview
+  const header = `💬 ${post.num_comments} comments · ${post.score} upvotes\n\n${post.title}`;
+  const topComment = await fetchTopRedditComment(post.subreddit, post.id);
+  return topComment
+    ? `${header}\n\nTop of the thread: ${topComment}`
+    : header;
 }
 
 function getThumbnail(post: RedditPost['data']): string | undefined {
@@ -63,20 +100,19 @@ export async function fetchRedditArticle(
     const json: RedditListing = await res.json();
     const posts = json.data.children
       .map((c) => c.data)
-      .filter(
-        (p) =>
-          !p.stickied &&
-          !p.over_18 &&
-          p.score > 50 &&
-          p.title.length > 15
-      );
+      .filter((p) => {
+        if (p.stickied || p.over_18) return false;
+        const hasText = p.selftext && p.selftext.replace(/\s/g, '').length > 100;
+        const highEngagement =
+          p.title.length > 40 && p.score > 200 && p.num_comments > 50;
+        return hasText || highEngagement;
+      });
 
     if (posts.length === 0) return null;
 
     const post = pickRandom(posts);
-    const extract = formatExtract(post);
+    const extract = await buildRedditExtract(post);
 
-    // External URL: prefer the linked article; for self-posts use full Reddit thread
     const pageUrl = post.is_self
       ? `https://www.reddit.com${post.permalink}`
       : post.url;

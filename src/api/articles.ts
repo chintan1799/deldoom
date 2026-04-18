@@ -70,6 +70,8 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
 
   // Try chosen source, then fall back through a short chain, then Wikipedia
   const source = pickSource(interestId);
+  // DEV: remove after confirming distribution is balanced
+  console.log(`[deldoom] source: ${source} | interest: ${interestId}`);
 
   const trySource = async (): Promise<Article | null> => {
     switch (source) {
