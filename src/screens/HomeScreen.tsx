@@ -9,20 +9,31 @@ import { MilestoneModal } from '../components/MilestoneModal';
 
 function SkeletonFull() {
   return (
-    <div className="fixed inset-0 bg-slate-50 dark:bg-navy-950 animate-pulse flex flex-col">
-      <div className="w-full h-[45vh] bg-slate-200 dark:bg-navy-800" />
+    <div className="fixed inset-0 bg-slate-50 dark:bg-navy-950 flex flex-col">
+      <div className="w-full h-[45vh] shimmer" />
       <div className="flex-1 bg-white dark:bg-navy-950 rounded-t-[28px] px-5 pt-5 space-y-4">
-        <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded-full w-24" />
-        <div className="h-7 bg-slate-200 dark:bg-navy-800 rounded-xl w-full" />
-        <div className="h-7 bg-slate-200 dark:bg-navy-800 rounded-xl w-2/3" />
+        <div className="h-4 shimmer rounded-full w-24" />
+        <div className="h-7 shimmer rounded-xl w-full" />
+        <div className="h-7 shimmer rounded-xl w-2/3" />
         <div className="space-y-2 pt-2">
-          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-full" />
-          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-full" />
-          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-3/4" />
+          <div className="h-4 shimmer rounded w-full" />
+          <div className="h-4 shimmer rounded w-full" />
+          <div className="h-4 shimmer rounded w-3/4" />
         </div>
       </div>
     </div>
   );
+}
+
+/** Delay the skeleton by ~300ms so fast (prefetched / cached) loads don't flash a loading state. */
+function useDelayedFlag(active: boolean, delayMs = 300) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    if (!active) { setShow(false); return; }
+    const t = setTimeout(() => setShow(true), delayMs);
+    return () => clearTimeout(t);
+  }, [active, delayMs]);
+  return show;
 }
 
 export function HomeScreen() {
@@ -30,6 +41,8 @@ export function HomeScreen() {
   const { article, loading, error, roll, goBack, canGoBack } = useArticle(selectedInterests);
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Skeleton only renders if loading persists >300ms — avoids flash on queue hits
+  const showSkeleton = useDelayedFlag(loading && !article);
 
   useEffect(() => {
     roll();
@@ -81,7 +94,7 @@ export function HomeScreen() {
 
       {/* Card / loading / error area */}
       <AnimatePresence mode="wait">
-        {loading ? (
+        {showSkeleton ? (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <SkeletonFull />
           </motion.div>

@@ -5,6 +5,8 @@ import type { Article } from '../types';
 const MILESTONE_THRESHOLDS = [2, 5, 10, 25, 50, 100];
 const SEEN_IDS_CAP = 500;
 const RECENT_SOURCES_CAP = 4;
+const ARTICLE_CACHE_CAP = 100;
+const ARTICLE_CACHE_EVICT = 20;
 
 interface AppState {
   selectedInterests: string[];
@@ -17,6 +19,11 @@ interface AppState {
   lastActiveDate: string | null;
   rollCount: number;
   darkMode: boolean;
+  // Session-only (not persisted)
+  prefetchQueue: Article[];
+  isPrefetching: boolean;
+  articleCache: Record<string, Article>;
+  cacheOrder: string[];
 }
 
 interface AppActions {
@@ -36,6 +43,11 @@ interface AppActions {
   incrementRollCount: () => void;
   isMilestone: (count: number) => boolean;
   toggleDarkMode: () => void;
+  pushToPrefetchQueue: (article: Article) => void;
+  shiftFromPrefetchQueue: () => Article | null;
+  setIsPrefetching: (value: boolean) => void;
+  cacheArticle: (article: Article) => void;
+  getCachedArticle: (id: string) => Article | undefined;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -53,6 +65,10 @@ export const useAppStore = create<AppState & AppActions>()(
       lastActiveDate: null,
       rollCount: 0,
       darkMode: false,
+      prefetchQueue: [],
+      isPrefetching: false,
+      articleCache: {},
+      cacheOrder: [],
 
       toggleInterest: (id) =>
         set((state) => ({
@@ -123,6 +139,34 @@ export const useAppStore = create<AppState & AppActions>()(
 
       resetOnboarding: () =>
         set({ onboardingComplete: false, selectedInterests: [] }),
+
+      pushToPrefetchQueue: (article) =>
+        set((state) => ({ prefetchQueue: [...state.prefetchQueue, article] })),
+
+      shiftFromPrefetchQueue: () => {
+        const queue = get().prefetchQueue;
+        if (queue.length === 0) return null;
+        const [next, ...rest] = queue;
+        set({ prefetchQueue: rest });
+        return next;
+      },
+
+      setIsPrefetching: (value) => set({ isPrefetching: value }),
+
+      cacheArticle: (article) =>
+        set((state) => {
+          if (state.articleCache[article.id]) return state;
+          const nextCache = { ...state.articleCache, [article.id]: article };
+          let nextOrder = [...state.cacheOrder, article.id];
+          if (nextOrder.length > ARTICLE_CACHE_CAP) {
+            const evicted = nextOrder.slice(0, ARTICLE_CACHE_EVICT);
+            nextOrder = nextOrder.slice(ARTICLE_CACHE_EVICT);
+            for (const id of evicted) delete nextCache[id];
+          }
+          return { articleCache: nextCache, cacheOrder: nextOrder };
+        }),
+
+      getCachedArticle: (id) => get().articleCache[id],
     }),
     {
       name: 'deldoom-storage',
