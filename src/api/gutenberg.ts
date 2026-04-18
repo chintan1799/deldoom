@@ -100,6 +100,7 @@ export async function fetchGutenbergArticle(
       `https://www.gutenberg.org/cache/epub/${book.id}/pg${book.id}.cover.medium.jpg`;
 
     return {
+      id: `gutenberg_${book.id}`,
       title: book.title,
       description: `${author} · Project Gutenberg`,
       extract,

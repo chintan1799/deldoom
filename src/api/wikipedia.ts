@@ -107,6 +107,7 @@ function mapSummaryToArticle(summary: WikiSummaryResponse, interestId: string): 
   const interest = getInterestById(interestId) ?? INTERESTS[0];
   const wordCount = summary.extract?.split(/\s+/).length ?? 0;
   return {
+    id: summary.pageid ? `wiki_${summary.pageid}` : `wiki_${summary.title.replace(/ /g, '_')}`,
     title: summary.title,
     description: summary.description,
     extract: summary.extract,

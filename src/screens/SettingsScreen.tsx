@@ -15,6 +15,8 @@ export function SettingsScreen() {
     toggleInterest,
     history,
     clearHistory,
+    seenArticleIds,
+    clearSeenArticles,
     streak,
     resetOnboarding,
   } = useAppStore();
@@ -196,6 +198,23 @@ export function SettingsScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Clear seen history */}
+      <div className="px-6 py-3 border-t border-slate-100 dark:border-navy-800">
+        <button
+          onClick={clearSeenArticles}
+          disabled={seenArticleIds.length === 0}
+          className="w-full flex items-center justify-center gap-2 text-sm text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 disabled:opacity-40 transition-colors py-3 min-h-[44px]"
+        >
+          <BookOpen size={14} />
+          Clear seen history
+          {seenArticleIds.length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 bg-slate-100 dark:bg-navy-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
+              {seenArticleIds.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Reset onboarding */}

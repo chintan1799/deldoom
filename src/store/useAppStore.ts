@@ -3,11 +3,13 @@ import { persist } from 'zustand/middleware';
 import type { Article } from '../types';
 
 const MILESTONE_THRESHOLDS = [2, 5, 10, 25, 50, 100];
+const SEEN_IDS_CAP = 500;
 
 interface AppState {
   selectedInterests: string[];
   savedArticles: Article[];
   history: Article[];
+  seenArticleIds: string[];
   onboardingComplete: boolean;
   streak: number;
   lastActiveDate: string | null;
@@ -24,6 +26,8 @@ interface AppActions {
   addToHistory: (article: Article) => void;
   clearHistory: () => void;
   isArticleSaved: (wikiTitle: string) => boolean;
+  markArticleSeen: (id: string) => void;
+  clearSeenArticles: () => void;
   updateStreak: () => void;
   resetOnboarding: () => void;
   incrementRollCount: () => void;
@@ -39,6 +43,7 @@ export const useAppStore = create<AppState & AppActions>()(
       selectedInterests: [],
       savedArticles: [],
       history: [],
+      seenArticleIds: [],
       onboardingComplete: false,
       streak: 0,
       lastActiveDate: null,
@@ -79,6 +84,15 @@ export const useAppStore = create<AppState & AppActions>()(
       isArticleSaved: (wikiTitle) =>
         get().savedArticles.some((a) => a.wikiTitle === wikiTitle),
 
+      markArticleSeen: (id) =>
+        set((state) => {
+          if (state.seenArticleIds.includes(id)) return state;
+          const next = [...state.seenArticleIds, id];
+          return { seenArticleIds: next.length > SEEN_IDS_CAP ? next.slice(-SEEN_IDS_CAP) : next };
+        }),
+
+      clearSeenArticles: () => set({ seenArticleIds: [] }),
+
       updateStreak: () =>
         set((state) => {
           const todayStr = today();
@@ -107,6 +121,7 @@ export const useAppStore = create<AppState & AppActions>()(
         selectedInterests: state.selectedInterests,
         savedArticles: state.savedArticles,
         history: state.history,
+        seenArticleIds: state.seenArticleIds,
         onboardingComplete: state.onboardingComplete,
         streak: state.streak,
         lastActiveDate: state.lastActiveDate,

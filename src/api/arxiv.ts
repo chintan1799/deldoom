@@ -1,4 +1,5 @@
 import type { Article, InterestCategory } from '../types';
+import { djb2 } from './utils';
 
 interface Rss2JsonItem {
   title: string;
@@ -60,6 +61,7 @@ export async function fetchArxivArticle(
     const extract = abstract.replace(/^Abstract:\s*/i, '');
 
     return {
+      id: `arxiv_${djb2(item.link)}`,
       title: item.title.replace(/\n/g, ' ').trim(),
       description: `arXiv · ${category}`,
       extract,

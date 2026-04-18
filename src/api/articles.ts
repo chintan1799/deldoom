@@ -61,14 +61,16 @@ function pickSource(interestId: string): Source {
   return 'wikipedia';
 }
 
-export async function fetchRandomArticle(selectedInterestIds: string[]): Promise<Article> {
+export async function fetchRandomArticle(
+  selectedInterestIds: string[],
+  seenIds: string[] = []
+): Promise<Article> {
   const ids = selectedInterestIds.length ? selectedInterestIds : INTERESTS.map((i) => i.id);
   const interestId = pickRandom(ids);
   const interest = getInterestById(interestId);
 
   if (!interest) return fetchRandomArticleForInterests(ids);
 
-  // Try chosen source, then fall back through a short chain, then Wikipedia
   const source = pickSource(interestId);
   // DEV: remove after confirming distribution is balanced
   console.log(`[deldoom] source: ${source} | interest: ${interestId}`);
@@ -91,14 +93,33 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
   };
 
   if (source !== 'wikipedia') {
-    try {
-      const article = await trySource();
-      // Require non-empty extract
-      if (article && article.extract.trim().length > 0) return article;
-    } catch {
-      // fall through to Wikipedia
+    // Try up to 5 times to get a non-duplicate from this source
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const article = await trySource();
+        if (!article || !article.extract.trim()) continue;
+
+        if (seenIds.includes(article.id)) {
+          if (import.meta.env.DEV) {
+            console.log(`[deldoom] dup: ${article.id} (attempt ${attempt + 1}/5)`);
+          }
+          continue;
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(`[deldoom] ✓ ${article.id} | seen pool: ${seenIds.length}`);
+        }
+        return article;
+      } catch {
+        break; // source is down — fall through to Wikipedia
+      }
     }
   }
 
-  return fetchRandomArticleForInterests(ids);
+  // Fall back to Wikipedia (different source) — also check for duplicates once
+  const wikiArticle = await fetchRandomArticleForInterests(ids);
+  if (!seenIds.includes(wikiArticle.id)) return wikiArticle;
+
+  // Absolute last resort: return the Wikipedia article even if seen
+  return wikiArticle;
 }

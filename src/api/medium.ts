@@ -1,4 +1,5 @@
 import type { Article, InterestCategory } from '../types';
+import { djb2 } from './utils';
 
 interface Rss2JsonItem {
   title: string;
@@ -57,6 +58,7 @@ export async function fetchMediumArticle(
     const extract = stripHtml(item.description).slice(0, 500);
 
     return {
+      id: `medium_${djb2(item.link)}`,
       title: item.title,
       description: `Medium · #${tag}`,
       extract,

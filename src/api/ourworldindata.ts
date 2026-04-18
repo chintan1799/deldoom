@@ -1,4 +1,5 @@
 import type { Article, InterestCategory } from '../types';
+import { djb2 } from './utils';
 
 interface Rss2JsonItem {
   title: string;
@@ -53,6 +54,7 @@ export async function fetchOwidArticle(
     const extract = stripHtml(item.description).slice(0, 500);
 
     return {
+      id: `owid_${djb2(item.link)}`,
       title: item.title,
       description: 'Our World in Data',
       extract,

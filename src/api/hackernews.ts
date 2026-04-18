@@ -88,6 +88,7 @@ export async function fetchHNArticle(
         })();
 
     return {
+      id: `hn_${hit.objectID}`,
       title: hit.title,
       description: 'Hacker News',
       extract,

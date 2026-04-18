@@ -19,6 +19,7 @@ export interface InterestCategory {
 }
 
 export interface Article {
+  id: string;
   title: string;
   description?: string;
   extract: string;
@@ -56,6 +57,7 @@ export interface BookResult {
 }
 
 export interface WikiSummaryResponse {
+  pageid?: number;
   title: string;
   extract: string;
   description?: string;

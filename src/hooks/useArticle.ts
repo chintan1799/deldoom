@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type { Article } from '../types';
 import { fetchRandomArticle } from '../api/articles';
+import { useAppStore } from '../store/useAppStore';
 
 interface UseArticleReturn {
   article: Article | null;
@@ -16,19 +17,15 @@ export function useArticle(selectedInterests: string[]): UseArticleReturn {
   const [previousArticle, setPreviousArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const seenUrls = useRef<Set<string>>(new Set());
+  const { seenArticleIds, markArticleSeen } = useAppStore();
 
   const roll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      let result = await fetchRandomArticle(selectedInterests);
-      // Retry up to 2 times if we've already seen this URL this session
-      for (let i = 0; i < 2 && result && seenUrls.current.has(result.pageUrl); i++) {
-        result = await fetchRandomArticle(selectedInterests);
-      }
-      if (result) seenUrls.current.add(result.pageUrl);
-      // Save current article as previous before overwriting
+      const result = await fetchRandomArticle(selectedInterests, seenArticleIds);
+      markArticleSeen(result.id);
+      // Save current as previous before overwriting
       setArticle(current => {
         setPreviousArticle(current);
         return result;
@@ -38,7 +35,7 @@ export function useArticle(selectedInterests: string[]): UseArticleReturn {
     } finally {
       setLoading(false);
     }
-  }, [selectedInterests]);
+  }, [selectedInterests, seenArticleIds, markArticleSeen]);
 
   const goBack = useCallback(() => {
     if (!previousArticle) return;

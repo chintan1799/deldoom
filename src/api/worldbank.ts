@@ -88,6 +88,7 @@ export async function fetchWorldBankArticle(
     }
 
     return {
+      id: `wb_${indicator.code}_${countryCode}`,
       title: `${country}: ${indicator.label}`,
       description: 'World Bank Open Data',
       extract,

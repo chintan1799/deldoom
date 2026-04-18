@@ -62,6 +62,7 @@ export async function fetchStackExchangeArticle(
     const extract = stripHtml(item.body).slice(0, 500);
 
     return {
+      id: `se_${item.question_id}`,
       title: item.title,
       description: `Stack Exchange · ${site}`,
       extract,

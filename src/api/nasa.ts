@@ -43,6 +43,7 @@ export async function fetchNasaArticle(
     const extract = item.explanation.slice(0, 550);
 
     return {
+      id: `nasa_${item.date}`,
       title: item.title,
       description: 'NASA · Astronomy Picture of the Day',
       extract,

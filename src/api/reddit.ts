@@ -118,6 +118,7 @@ export async function fetchRedditArticle(
       : post.url;
 
     return {
+      id: `reddit_${post.id}`,
       title: post.title,
       description: `r/${post.subreddit}`,
       extract,
