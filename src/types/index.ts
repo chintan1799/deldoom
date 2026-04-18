@@ -16,6 +16,10 @@ export interface InterestCategory {
   gutenbergTopics?: string[];
   hasSep?: boolean;
   hasOwid?: boolean;
+  hasFinshots?: boolean;
+  hasAeon?: boolean;
+  hasMarginalian?: boolean;
+  hasAtlasObscura?: boolean;
 }
 
 export interface Article {
@@ -34,7 +38,8 @@ export interface Article {
   interestColor: string;
   readingTimeMin?: number;
   source?: 'wikipedia' | 'reddit' | 'hackernews' | 'techcrunch' | 'medium'
-         | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg';
+         | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg'
+         | 'finshots' | 'aeon' | 'marginalian' | 'atlasobscura';
   author?: string;
   publishedAt?: string;
   score?: number;

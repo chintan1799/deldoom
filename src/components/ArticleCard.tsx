@@ -25,6 +25,10 @@ const SOURCE_CONFIG: Record<string, { label: string; bg: string; text: string }>
   owid:         { label: 'OWID',   bg: 'bg-teal-600',               text: 'text-white' },
   worldbank:    { label: 'WB',     bg: 'bg-sky-700',                text: 'text-white' },
   gutenberg:    { label: 'BOOK',   bg: 'bg-amber-700',              text: 'text-white' },
+  finshots:     { label: 'FINS',   bg: 'bg-amber-500',              text: 'text-white' },
+  aeon:         { label: 'AEON',   bg: 'bg-emerald-700',            text: 'text-white' },
+  marginalian:  { label: 'MARG',   bg: 'bg-amber-800',              text: 'text-white' },
+  atlasobscura: { label: 'ATLAS',  bg: 'bg-orange-700',             text: 'text-white' },
 };
 
 function formatScore(n: number) {

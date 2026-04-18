@@ -75,6 +75,8 @@ export const INTERESTS: InterestCategory[] = [
     arxivCategories: ['q-bio.NC', 'cs.NE'],
     mediumTags: ['neuroscience', 'brain', 'psychology'],
     hasSep: true,
+    hasAeon: true,
+    hasMarginalian: true,
   },
   {
     id: 'genetics',
@@ -294,6 +296,7 @@ export const INTERESTS: InterestCategory[] = [
     wikipediaCategories: ['Ancient_history', 'Ancient_Rome', 'Ancient_Greece'],
     redditSubs: ['AncientHistory', 'history', 'todayilearned'],
     gutenbergTopics: ['history', 'rome', 'greece', 'ancient'],
+    hasAtlasObscura: true,
   },
   {
     id: 'medieval',
@@ -306,6 +309,7 @@ export const INTERESTS: InterestCategory[] = [
     wikipediaCategories: ['Middle_Ages', 'Medieval_warfare', 'Crusades'],
     redditSubs: ['ArtefactPorn', 'history', 'todayilearned'],
     gutenbergTopics: ['medieval', 'history', 'crusades'],
+    hasAtlasObscura: true,
   },
   {
     id: 'modern_history',
@@ -319,6 +323,7 @@ export const INTERESTS: InterestCategory[] = [
     redditSubs: ['history', 'HistoryMemes', 'todayilearned'],
     gutenbergTopics: ['history', 'war', 'politics'],
     hasOwid: true,
+    hasAtlasObscura: true,
   },
   {
     id: 'wars',
@@ -342,6 +347,7 @@ export const INTERESTS: InterestCategory[] = [
     group: 'History',
     wikipediaCategories: ['Archaeology', 'Ancient_artifacts', 'Prehistoric_cultures'],
     redditSubs: ['Archaeology', 'todayilearned'],
+    hasAtlasObscura: true,
   },
   {
     id: 'revolutions',
@@ -380,6 +386,7 @@ export const INTERESTS: InterestCategory[] = [
     wikipediaCategories: ['Music', 'Music_genres', 'Musical_instruments'],
     redditSubs: ['Music', 'WeAreTheMusicMakers', 'todayilearned'],
     mediumTags: ['music', 'music-theory', 'history'],
+    hasMarginalian: true,
   },
   {
     id: 'cinema',
@@ -405,6 +412,8 @@ export const INTERESTS: InterestCategory[] = [
     redditSubs: ['books', 'literature', 'todayilearned'],
     mediumTags: ['books', 'writing', 'literature'],
     gutenbergTopics: ['fiction', 'poetry', 'drama', 'literature'],
+    hasAeon: true,
+    hasMarginalian: true,
   },
   {
     id: 'visual_art',
@@ -417,6 +426,7 @@ export const INTERESTS: InterestCategory[] = [
     wikipediaCategories: ['Visual_arts', 'Painting', 'Modern_art'],
     redditSubs: ['Art', 'ArtHistory', 'todayilearned'],
     mediumTags: ['art', 'design', 'creativity'],
+    hasMarginalian: true,
   },
   {
     id: 'architecture',
@@ -643,6 +653,8 @@ export const INTERESTS: InterestCategory[] = [
     mediumTags: ['philosophy', 'stoicism', 'ethics'],
     gutenbergTopics: ['philosophy', 'ethics', 'logic'],
     hasSep: true,
+    hasAeon: true,
+    hasMarginalian: true,
   },
   {
     id: 'psychology',
@@ -656,6 +668,7 @@ export const INTERESTS: InterestCategory[] = [
     redditSubs: ['psychology', 'explainlikeimfive', 'todayilearned'],
     mediumTags: ['psychology', 'mindset', 'mental-health'],
     hasSep: true,
+    hasAeon: true,
   },
   {
     id: 'economics',
@@ -671,6 +684,7 @@ export const INTERESTS: InterestCategory[] = [
     mediumTags: ['economics', 'money', 'finance'],
     hasSep: true,
     hasOwid: true,
+    hasFinshots: true,
   },
   {
     id: 'politics',
@@ -698,6 +712,7 @@ export const INTERESTS: InterestCategory[] = [
     mediumTags: ['sociology', 'culture', 'society'],
     hasSep: true,
     hasOwid: true,
+    hasAeon: true,
   },
   {
     id: 'mythology',
@@ -711,6 +726,7 @@ export const INTERESTS: InterestCategory[] = [
     redditSubs: ['mythology', 'todayilearned'],
     gutenbergTopics: ['mythology', 'folklore', 'legends'],
     hasSep: true,
+    hasAtlasObscura: true,
   },
   {
     id: 'religion',
@@ -802,6 +818,7 @@ export const INTERESTS: InterestCategory[] = [
     wikipediaCategories: ['Popular_culture', 'Internet_culture', 'Memes'],
     redditSubs: ['entertainment', 'popculturechat', 'todayilearned'],
     mediumTags: ['culture', 'entertainment', 'society'],
+    hasAtlasObscura: true,
   },
 
   // ── HEALTH ───────────────────────────────────────────────
@@ -860,6 +877,7 @@ export const INTERESTS: InterestCategory[] = [
     redditSubs: ['startups', 'Entrepreneur', 'explainlikeimfive', 'todayilearned'],
     hnTags: ['startup', 'entrepreneurship'],
     mediumTags: ['startup', 'entrepreneurship', 'business'],
+    hasFinshots: true,
   },
   {
     id: 'finance',
@@ -874,6 +892,7 @@ export const INTERESTS: InterestCategory[] = [
     hnTags: ['finance', 'investing'],
     mediumTags: ['investing', 'finance', 'money'],
     hasOwid: true,
+    hasFinshots: true,
   },
 
   // ── WEIRD & WONDERFUL ────────────────────────────────────
@@ -887,6 +906,7 @@ export const INTERESTS: InterestCategory[] = [
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Unsolved_problems', 'Mysteries', 'Paranormal'],
     redditSubs: ['UnsolvedMysteries', 'mystery', 'todayilearned'],
+    hasAtlasObscura: true,
   },
   {
     id: 'weird',
@@ -898,6 +918,7 @@ export const INTERESTS: InterestCategory[] = [
     group: 'Weird & Wonderful',
     wikipediaCategories: ['Unusual_places', 'Bizarre_incidents', 'Optical_illusions'],
     redditSubs: ['todayilearned', 'Damnthatsinteresting', 'explainlikeimfive'],
+    hasAtlasObscura: true,
   },
   {
     id: 'inventions',
