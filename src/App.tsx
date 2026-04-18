@@ -9,6 +9,7 @@ import { ArticleScreen } from './screens/ArticleScreen';
 import { SavedScreen } from './screens/SavedScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { StatsScreen } from './screens/StatsScreen';
+import { CardPreviewScreen } from './screens/CardPreviewScreen';
 
 function RequireOnboarding({ children }: { children: React.ReactNode }) {
   const onboardingComplete = useAppStore((s) => s.onboardingComplete);
@@ -69,6 +70,7 @@ export default function App() {
             </RequireOnboarding>
           }
         />
+        <Route path="/card-preview" element={<CardPreviewScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
