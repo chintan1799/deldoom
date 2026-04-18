@@ -83,60 +83,63 @@ export async function fetchRedditArticle(
   const subs = interest.redditSubs;
   if (!subs || subs.length === 0) return null;
 
-  const sub = pickRandom(subs);
+  // Try up to 3 different subs before giving up on Reddit entirely
+  const triedSubs = new Set<string>();
+  for (let subAttempt = 0; subAttempt < Math.min(3, subs.length); subAttempt++) {
+    const available = subs.filter((s) => !triedSubs.has(s));
+    if (!available.length) break;
+    const sub = pickRandom(available);
+    triedSubs.add(sub);
 
-  try {
-    const res = await fetch(
-      `https://www.reddit.com/r/${sub}/top.json?t=all&limit=100`,
-      {
-        headers: {
-          'User-Agent': 'deldoom/1.0 (microlearning app)',
-          Accept: 'application/json',
-        },
-      }
-    );
-    if (!res.ok) return null;
+    try {
+      const res = await fetch(
+        `https://www.reddit.com/r/${sub}/top.json?t=month&limit=100`,
+        { headers: { Accept: 'application/json' } }
+      );
+      if (!res.ok) continue;
 
-    const json: RedditListing = await res.json();
-    const posts = json.data.children
-      .map((c) => c.data)
-      .filter((p) => {
-        if (p.stickied || p.over_18) return false;
-        const hasText = p.selftext && p.selftext.replace(/\s/g, '').length > 100;
-        const highEngagement =
-          p.title.length > 40 && p.score > 200 && p.num_comments > 50;
-        return hasText || highEngagement;
-      });
+      const json: RedditListing = await res.json();
+      const posts = json.data.children
+        .map((c) => c.data)
+        .filter((p) => {
+          if (p.stickied || p.over_18) return false;
+          const hasText = p.selftext && p.selftext.replace(/\s/g, '').length > 100;
+          const highEngagement =
+            p.title.length > 30 && p.score > 100 && p.num_comments > 20;
+          return hasText || highEngagement;
+        });
 
-    if (posts.length === 0) return null;
+      if (posts.length === 0) continue;
 
-    const post = pickRandom(posts);
-    const extract = await buildRedditExtract(post);
+      const post = pickRandom(posts);
+      const extract = await buildRedditExtract(post);
 
-    const pageUrl = post.is_self
-      ? `https://www.reddit.com${post.permalink}`
-      : post.url;
+      const pageUrl = post.is_self
+        ? `https://www.reddit.com${post.permalink}`
+        : post.url;
 
-    return {
-      id: `reddit_${post.id}`,
-      title: post.title,
-      description: `r/${post.subreddit}`,
-      extract,
-      interestingFact: undefined,
-      thumbnailUrl: getThumbnail(post),
-      pageUrl,
-      wikiTitle: '',
-      interestId: interest.id,
-      interestLabel: interest.label,
-      interestEmoji: interest.emoji,
-      interestColor: interest.color,
-      source: 'reddit',
-      author: `u/${post.author}`,
-      publishedAt: new Date(post.created_utc * 1000).toISOString(),
-      score: post.score,
-      subreddit: `r/${post.subreddit}`,
-    };
-  } catch {
-    return null;
+      return {
+        id: `reddit_${post.id}`,
+        title: post.title,
+        description: `r/${post.subreddit}`,
+        extract,
+        interestingFact: undefined,
+        thumbnailUrl: getThumbnail(post),
+        pageUrl,
+        wikiTitle: '',
+        interestId: interest.id,
+        interestLabel: interest.label,
+        interestEmoji: interest.emoji,
+        interestColor: interest.color,
+        source: 'reddit',
+        author: `u/${post.author}`,
+        publishedAt: new Date(post.created_utc * 1000).toISOString(),
+        score: post.score,
+        subreddit: `r/${post.subreddit}`,
+      };
+    } catch {
+      continue;
+    }
   }
+  return null;
 }

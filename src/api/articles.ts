@@ -113,11 +113,14 @@ export async function fetchRandomArticle(
 
   if (!interest) return fetchRandomArticleForInterests(ids);
 
-  const tried = new Set<Source>();
-  const MAX_SOURCE_ATTEMPTS = 6;
+  // failed: source returned null/threw — exclude it from future picks this roll
+  // dupCount: per-source dup counter — only exclude after 3 dupes from same source
+  const failed = new Set<Source>();
+  const dupCount = new Map<Source, number>();
+  const MAX_SOURCE_ATTEMPTS = 8;
 
   for (let attempt = 0; attempt < MAX_SOURCE_ATTEMPTS; attempt++) {
-    const pool = buildSourcePool(interest, tried, recentSources);
+    const pool = buildSourcePool(interest, failed, recentSources);
     if (!pool.length) break;
 
     const source = weightedPick(pool);
@@ -126,22 +129,32 @@ export async function fetchRandomArticle(
     if (import.meta.env.DEV) {
       // DEV: remove after confirming distribution is balanced
       console.log(
-        `[deldoom] pick ${source} | interest: ${interestId} | attempt ${attempt + 1} | excluded: [${[...tried].join(',') || '-'}] | recent: [${recentSources.join(',') || '-'}]`
+        `[deldoom] pick ${source} | interest: ${interestId} | attempt ${attempt + 1} | failed: [${[...failed].join(',') || '-'}] | recent: [${recentSources.join(',') || '-'}]`
       );
     }
 
     try {
       const result = await invokeSource(source, interest);
-      if (result && result.extract.trim() && !seenIds.includes(result.id)) {
-        return result;
+
+      if (!result || !result.extract.trim()) {
+        // Source can't provide anything useful — exclude it
+        failed.add(source);
+        continue;
       }
-      if (import.meta.env.DEV && result && seenIds.includes(result.id)) {
-        console.log(`[deldoom] dup ${result.id} — re-rolling`);
+
+      if (seenIds.includes(result.id)) {
+        // Dup — count against this source; exclude only after 3 dupes
+        const n = (dupCount.get(source) ?? 0) + 1;
+        dupCount.set(source, n);
+        if (import.meta.env.DEV) console.log(`[deldoom] dup ${result.id} (${n}/3)`);
+        if (n >= 3) failed.add(source);
+        continue;
       }
+
+      return result;
     } catch {
-      // swallow — re-roll
+      failed.add(source);
     }
-    tried.add(source);
   }
 
   // Absolute last resort — generic Wikipedia across all selected interests

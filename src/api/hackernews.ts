@@ -48,9 +48,8 @@ export async function fetchHNArticle(
   interest: InterestCategory
 ): Promise<Article | null> {
   const tags = interest.hnTags;
-  if (!tags || tags.length === 0) return null;
-
-  const tag = pickRandom(tags);
+  // Fall back to the interest label when no explicit tags are configured
+  const tag = tags && tags.length > 0 ? pickRandom(tags) : interest.label.toLowerCase();
 
   try {
     const params = new URLSearchParams({
