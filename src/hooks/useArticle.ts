@@ -17,14 +17,15 @@ export function useArticle(selectedInterests: string[]): UseArticleReturn {
   const [previousArticle, setPreviousArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { seenArticleIds, markArticleSeen } = useAppStore();
+  const { seenArticleIds, markArticleSeen, recentSources, pushRecentSource } = useAppStore();
 
   const roll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchRandomArticle(selectedInterests, seenArticleIds);
+      const result = await fetchRandomArticle(selectedInterests, seenArticleIds, recentSources);
       markArticleSeen(result.id);
+      pushRecentSource(result.source ?? 'wikipedia');
       // Save current as previous before overwriting
       setArticle(current => {
         setPreviousArticle(current);
@@ -35,7 +36,7 @@ export function useArticle(selectedInterests: string[]): UseArticleReturn {
     } finally {
       setLoading(false);
     }
-  }, [selectedInterests, seenArticleIds, markArticleSeen]);
+  }, [selectedInterests, seenArticleIds, recentSources, markArticleSeen, pushRecentSource]);
 
   const goBack = useCallback(() => {
     if (!previousArticle) return;

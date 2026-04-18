@@ -4,12 +4,14 @@ import type { Article } from '../types';
 
 const MILESTONE_THRESHOLDS = [2, 5, 10, 25, 50, 100];
 const SEEN_IDS_CAP = 500;
+const RECENT_SOURCES_CAP = 4;
 
 interface AppState {
   selectedInterests: string[];
   savedArticles: Article[];
   history: Article[];
   seenArticleIds: string[];
+  recentSources: string[];
   onboardingComplete: boolean;
   streak: number;
   lastActiveDate: string | null;
@@ -28,6 +30,7 @@ interface AppActions {
   isArticleSaved: (wikiTitle: string) => boolean;
   markArticleSeen: (id: string) => void;
   clearSeenArticles: () => void;
+  pushRecentSource: (source: string) => void;
   updateStreak: () => void;
   resetOnboarding: () => void;
   incrementRollCount: () => void;
@@ -44,6 +47,7 @@ export const useAppStore = create<AppState & AppActions>()(
       savedArticles: [],
       history: [],
       seenArticleIds: [],
+      recentSources: [],
       onboardingComplete: false,
       streak: 0,
       lastActiveDate: null,
@@ -93,6 +97,11 @@ export const useAppStore = create<AppState & AppActions>()(
 
       clearSeenArticles: () => set({ seenArticleIds: [] }),
 
+      pushRecentSource: (source) =>
+        set((state) => ({
+          recentSources: [...state.recentSources, source].slice(-RECENT_SOURCES_CAP),
+        })),
+
       updateStreak: () =>
         set((state) => {
           const todayStr = today();
@@ -122,6 +131,7 @@ export const useAppStore = create<AppState & AppActions>()(
         savedArticles: state.savedArticles,
         history: state.history,
         seenArticleIds: state.seenArticleIds,
+        recentSources: state.recentSources,
         onboardingComplete: state.onboardingComplete,
         streak: state.streak,
         lastActiveDate: state.lastActiveDate,
