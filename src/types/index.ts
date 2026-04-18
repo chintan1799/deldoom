@@ -85,3 +85,13 @@ export interface WikiCategoryMember {
   ns: number;
   title: string;
 }
+
+export interface BehaviourEvent {
+  articleId: string;
+  title: string;
+  interest: string;
+  source: string;
+  action: 'read' | 'saved' | 'skipped' | 'dug_deeper';
+  dwellMs: number;
+  timestamp: number;
+}

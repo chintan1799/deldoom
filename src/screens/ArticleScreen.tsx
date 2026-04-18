@@ -61,7 +61,8 @@ export function ArticleScreen() {
   const location = useLocation();
   const passedArticle = (location.state as { article?: Article } | null)?.article;
   const isWikipedia = !passedArticle || passedArticle.source === 'wikipedia';
-  const { savedArticles, saveArticle, unsaveArticle, isArticleSaved } = useAppStore();
+  const { savedArticles, saveArticle, unsaveArticle, isArticleSaved, logBehaviour } = useAppStore();
+  const mountRef = useRef<number>(Date.now());
 
   const [sections, setSections] = useState<Section[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -235,8 +236,22 @@ export function ArticleScreen() {
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
-                    if (isLastSection) navigate(-1);
-                    else goTo(currentIdx + 1);
+                    if (isLastSection) {
+                      if (passedArticle) {
+                        logBehaviour({
+                          articleId: passedArticle.id,
+                          title: passedArticle.title,
+                          interest: passedArticle.interestLabel,
+                          source: passedArticle.source ?? 'wikipedia',
+                          action: 'read',
+                          dwellMs: Date.now() - mountRef.current,
+                          timestamp: Date.now(),
+                        });
+                      }
+                      navigate(-1);
+                    } else {
+                      goTo(currentIdx + 1);
+                    }
                   }}
                   className="w-full py-3.5 rounded-2xl bg-navy-900 dark:bg-white text-white dark:text-navy-900 font-bold text-sm flex items-center justify-center gap-2"
                 >

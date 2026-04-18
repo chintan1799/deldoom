@@ -37,7 +37,7 @@ function useDelayedFlag(active: boolean, delayMs = 300) {
 }
 
 export function HomeScreen() {
-  const { selectedInterests, saveArticle, addToHistory, updateStreak, rollCount, incrementRollCount, isMilestone } = useAppStore();
+  const { selectedInterests, saveArticle, addToHistory, updateStreak, rollCount, incrementRollCount, isMilestone, logBehaviour } = useAppStore();
   const { article, loading, error, roll, goBack, canGoBack } = useArticle(selectedInterests);
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -57,14 +57,27 @@ export function HomeScreen() {
     roll();
   }
 
-  function handleSave() {
-    if (article) { saveArticle(article); addToHistory(article); }
+  function handleSave(dwellMs: number) {
+    if (article) {
+      saveArticle(article);
+      addToHistory(article);
+      logBehaviour({ articleId: article.id, title: article.title, interest: article.interestLabel, source: article.source ?? 'wikipedia', action: 'saved', dwellMs, timestamp: Date.now() });
+    }
     doRoll();
   }
 
-  function handleSkip() {
-    if (article) addToHistory(article);
+  function handleSkip(dwellMs: number) {
+    if (article) {
+      addToHistory(article);
+      logBehaviour({ articleId: article.id, title: article.title, interest: article.interestLabel, source: article.source ?? 'wikipedia', action: 'skipped', dwellMs, timestamp: Date.now() });
+    }
     doRoll();
+  }
+
+  function handleDigDeeper(dwellMs: number) {
+    if (article) {
+      logBehaviour({ articleId: article.id, title: article.title, interest: article.interestLabel, source: article.source ?? 'wikipedia', action: 'dug_deeper', dwellMs, timestamp: Date.now() });
+    }
   }
 
   return (
@@ -116,6 +129,7 @@ export function HomeScreen() {
               onSkip={handleSkip}
               onSave={handleSave}
               onRoll={doRoll}
+              onDigDeeper={handleDigDeeper}
               loading={loading}
             />
           </motion.div>

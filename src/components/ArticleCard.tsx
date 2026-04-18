@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { Lightbulb, ChevronDown, ChevronUp, TrendingUp, User, X, Bookmark, Dices } from 'lucide-react';
@@ -6,9 +6,10 @@ import type { Article } from '../types';
 
 interface ArticleCardProps {
   article: Article;
-  onSkip: () => void;
-  onSave: () => void;
+  onSkip: (dwellMs: number) => void;
+  onSave: (dwellMs: number) => void;
   onRoll: () => void;
+  onDigDeeper: (dwellMs: number) => void;
   loading?: boolean;
 }
 
@@ -40,10 +41,11 @@ function formatDate(iso: string) {
   catch { return ''; }
 }
 
-export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }: ArticleCardProps) {
+export function ArticleCard({ article, onSkip, onSave, onRoll, onDigDeeper, loading = false }: ArticleCardProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const mountRef = useRef(Date.now());
 
   const x            = useMotionValue(0);
   const rotate       = useTransform(x, [-200, 200], [-6, 6]);
@@ -55,13 +57,15 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
   const skipOverlay  = useTransform(x, [-130, 0], [0.18, 0]);
   const controls     = useAnimation();
 
+  function dwell() { return Date.now() - mountRef.current; }
+
   async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
     if (info.offset.x > 110) {
       await controls.start({ x: 600, opacity: 0, transition: { duration: 0.28 } });
-      onSave();
+      onSave(dwell());
     } else if (info.offset.x < -110) {
       await controls.start({ x: -600, opacity: 0, transition: { duration: 0.28 } });
-      onSkip();
+      onSkip(dwell());
     } else {
       controls.start({ x: 0, transition: { type: 'spring', stiffness: 320, damping: 28 } });
     }
@@ -69,6 +73,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
 
   function handleCta(e: React.MouseEvent) {
     e.stopPropagation();
+    onDigDeeper(dwell());
     const src = article.source ?? 'wikipedia';
     const slug = src === 'wikipedia' ? article.wikiTitle : article.title;
     navigate(`/article/${encodeURIComponent(slug)}`, { state: { article } });
@@ -222,7 +227,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
         style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}>
 
         {/* Skip */}
-        <motion.button whileTap={{ scale: 0.88 }} onClick={onSkip}
+        <motion.button whileTap={{ scale: 0.88 }} onClick={() => onSkip(dwell())}
           className="pointer-events-auto w-14 h-14 rounded-full bg-white dark:bg-navy-800 border-2 border-slate-200 dark:border-navy-700 shadow-xl flex items-center justify-center">
           <X size={22} strokeWidth={2.5} className="text-slate-500 dark:text-slate-400" />
         </motion.button>
@@ -240,7 +245,7 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
         </motion.button>
 
         {/* Save */}
-        <motion.button whileTap={{ scale: 0.88 }} onClick={onSave}
+        <motion.button whileTap={{ scale: 0.88 }} onClick={() => onSave(dwell())}
           className="pointer-events-auto w-14 h-14 rounded-full bg-navy-900 dark:bg-white border-2 border-navy-900 dark:border-white shadow-xl flex items-center justify-center">
           <Bookmark size={20} strokeWidth={2} className="text-white dark:text-navy-900" />
         </motion.button>
