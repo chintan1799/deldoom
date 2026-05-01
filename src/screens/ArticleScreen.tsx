@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Bookmark, BookmarkCheck, Dices, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { fetchArticleHtml, sanitizeWikiHtml } from '../api/wikipedia';
+import { fetchRedditTopComment } from '../api/reddit';
 import { useAppStore } from '../store/useAppStore';
 import { WikiTermPopup } from '../components/WikiTermPopup';
 import { ResourcePanel } from '../components/ResourcePanel';
@@ -69,6 +70,11 @@ export function ArticleScreen() {
   const [error, setError] = useState<string | null>(null);
   const [popupTitle, setPopupTitle] = useState<string | null>(null);
   const [direction, setDirection] = useState(1);
+  const [topComment, setTopComment] = useState<{
+    body: string;
+    author: string;
+    score: number;
+  } | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const decodedTitle = decodeURIComponent(wikiTitle ?? '');
@@ -99,6 +105,21 @@ export function ArticleScreen() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [decodedTitle]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch top Reddit comment for Reddit articles
+  useEffect(() => {
+    if (
+      passedArticle?.source === 'reddit' &&
+      passedArticle.pageUrl.includes('/comments/')
+    ) {
+      try {
+        const path = new URL(passedArticle.pageUrl).pathname;
+        fetchRedditTopComment(path).then(setTopComment).catch(() => {});
+      } catch {
+        // invalid URL — skip
+      }
+    }
+  }, [passedArticle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Event delegation for wiki-link taps
   useEffect(() => {
@@ -242,6 +263,33 @@ export function ArticleScreen() {
                 >
                   {isLastSection ? 'All absorbed ✓' : 'Absorbed ✓'}
                 </motion.button>
+
+                {/* Top Reddit comment */}
+                {isLastSection &&
+                  passedArticle?.source === 'reddit' &&
+                  topComment && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="mt-3 p-4 rounded-2xl bg-orange-50 dark:bg-navy-800 border border-orange-200 dark:border-navy-700"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                          💬 Top community response
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          ↑{topComment.score.toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                        "{topComment.body}"
+                      </p>
+                      <p className="text-xs text-slate-400 mt-2">
+                        — u/{topComment.author}
+                      </p>
+                    </motion.div>
+                  )}
 
                 {/* View original for non-Wikipedia */}
                 {isLastSection && !isWikipedia && passedArticle && (

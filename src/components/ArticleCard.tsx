@@ -46,11 +46,14 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
   const skipOpacity  = useTransform(x, [-130, -60, 0], [1, 0.9, 0]);
   const controls     = useAnimation();
 
-  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
-    if (info.offset.x > 110) {
+  async function handleDragEnd(
+    _: unknown,
+    info: { offset: { x: number }; velocity: { x: number } }
+  ) {
+    if (info.offset.x > 110 || info.velocity.x > 400) {
       await controls.start({ x: 600, opacity: 0, transition: { duration: 0.28 } });
       onSave();
-    } else if (info.offset.x < -110) {
+    } else if (info.offset.x < -110 || info.velocity.x < -400) {
       await controls.start({ x: -600, opacity: 0, transition: { duration: 0.28 } });
       onSkip();
     } else {

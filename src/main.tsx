@@ -11,3 +11,15 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+// After installing Capacitor (`npm install @capacitor/core @capacitor/app`),
+// uncomment the block below to handle Android back button:
+//
+// import { Capacitor } from '@capacitor/core';
+// if (Capacitor.isNativePlatform()) {
+//   import('@capacitor/app').then(({ App }) => {
+//     App.addListener('backButton', ({ canGoBack }) => {
+//       if (canGoBack) window.history.back();
+//     });
+//   });
+// }

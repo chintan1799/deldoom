@@ -3,7 +3,7 @@ import { INTERESTS, getInterestById } from '../data/interests';
 
 const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1';
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
-const AGENT = 'deldoom/0.2 (microlearning app)';
+const AGENT = 'lore/0.2 (microlearning app)';
 
 // ── Blocklist: skip articles that everyone already knows ──────────────────────
 const BASIC_TOPICS_BLOCKLIST = new Set([

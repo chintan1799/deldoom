@@ -30,7 +30,7 @@ export async function fetchHNArticle(
     const params = new URLSearchParams({
       tags: 'story',
       query: tag,
-      numericFilters: 'points>50',
+      numericFilters: 'points>10',
       hitsPerPage: '30',
     });
     const res = await fetch(
