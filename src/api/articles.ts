@@ -12,6 +12,9 @@ import { fetchStackExchangeArticle } from './stackexchange';
 import { fetchOwidArticle } from './ourworldindata';
 import { fetchWorldBankArticle } from './worldbank';
 import { fetchGutenbergArticle } from './gutenberg';
+import { fetchScienceFactArticle } from './sciencefacts';
+import { fetchXsumArticle } from './xsum';
+import { fetchNanoWikiArticle } from './nanowiki';
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -19,15 +22,37 @@ function pickRandom<T>(arr: T[]): T {
 
 type Source =
   | 'wikipedia' | 'reddit' | 'hackernews' | 'techcrunch' | 'medium'
-  | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg';
+  | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg'
+  | 'sciencefacts' | 'xsum' | 'nanowiki';
 
-// Build a weighted source list for a given interest, then pick one randomly
+// Science interests that benefit from HuggingFace science facts
+const SCIENCEFACTS_INTERESTS = [
+  'physics', 'biology', 'chemistry', 'astronomy', 'medicine', 'neuroscience',
+  'psychology', 'mathematics', 'earth_science', 'climate', 'nutrition',
+  'evolution', 'genetics', 'ecology', 'space_tech', 'biotech',
+];
+
+// News/current-events interests that benefit from BBC XSum articles
+const XSUM_INTERESTS = [
+  'politics', 'economics', 'sociology', 'finance', 'entrepreneurship',
+  'ai', 'coding', 'robotics', 'cybersecurity', 'climate', 'medicine',
+  'space_tech', 'internet', 'blockchain',
+];
+
+// Broad interests served by nano_wiki (simple encyclopedia)
+const NANOWIKI_INTERESTS = [
+  'history', 'philosophy', 'art', 'music', 'literature', 'linguistics',
+  'religion', 'geography', 'architecture', 'mythology', 'cooking',
+  'biology', 'physics', 'chemistry', 'astronomy', 'mathematics',
+  'psychology', 'economics', 'sociology',
+];
+
+// Build a weighted source pool for a given interest, then pick one randomly
 function pickSource(interestId: string): Source {
   const interest = getInterestById(interestId);
   if (!interest) return 'wikipedia';
 
-  // Build pool of [source, weight] pairs based on which fields are configured
-  const pool: [Source, number][] = [['wikipedia', 25]];
+  const pool: [Source, number][] = [['wikipedia', 20]];
 
   if ((interest.redditSubs?.length ?? 0) > 0)       pool.push(['reddit', 15]);
   if ((interest.hnTags?.length ?? 0) > 0)            pool.push(['hackernews', 8]);
@@ -36,7 +61,7 @@ function pickSource(interestId: string): Source {
   if (interest.stackExchangeSite)                     pool.push(['stackexchange', 6]);
   if (interest.hasSep)                               pool.push(['sep', 6]);
   if (interest.hasOwid)                              pool.push(['owid', 6]);
-  if (interest.gutenbergTopics?.length ?? 0 > 0)     pool.push(['gutenberg', 4]);
+  if ((interest.gutenbergTopics?.length ?? 0) > 0)   pool.push(['gutenberg', 4]);
 
   // NASA only for relevant interests
   const NASA_INTERESTS = ['astronomy', 'space_tech', 'earth_science', 'climate', 'physics'];
@@ -51,7 +76,15 @@ function pickSource(interestId: string): Source {
   const WB_INTERESTS = ['economics', 'finance', 'politics', 'sociology', 'climate', 'medicine', 'nutrition'];
   if (WB_INTERESTS.includes(interestId))             pool.push(['worldbank', 5]);
 
-  // Weighted random pick
+  // HuggingFace: science facts
+  if (SCIENCEFACTS_INTERESTS.includes(interestId))   pool.push(['sciencefacts', 12]);
+
+  // HuggingFace: BBC XSum news
+  if (XSUM_INTERESTS.includes(interestId))            pool.push(['xsum', 10]);
+
+  // HuggingFace: nano wiki (simple encyclopedia)
+  if (NANOWIKI_INTERESTS.includes(interestId))        pool.push(['nanowiki', 8]);
+
   const total = pool.reduce((s, [, w]) => s + w, 0);
   let r = Math.random() * total;
   for (const [source, weight] of pool) {
@@ -68,7 +101,6 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
 
   if (!interest) return fetchRandomArticleForInterests(ids);
 
-  // Try chosen source, then fall back through a short chain, then Wikipedia
   const source = pickSource(interestId);
 
   const trySource = async (): Promise<Article | null> => {
@@ -84,6 +116,9 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
       case 'owid':          return fetchOwidArticle(interest);
       case 'worldbank':     return fetchWorldBankArticle(interest);
       case 'gutenberg':     return fetchGutenbergArticle(interest);
+      case 'sciencefacts':  return fetchScienceFactArticle(interest);
+      case 'xsum':          return fetchXsumArticle(interest);
+      case 'nanowiki':      return fetchNanoWikiArticle(interest);
       default:              return null;
     }
   };
@@ -91,7 +126,6 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
   if (source !== 'wikipedia') {
     try {
       const article = await trySource();
-      // Require non-empty extract
       if (article && article.extract.trim().length > 0) return article;
     } catch {
       // fall through to Wikipedia

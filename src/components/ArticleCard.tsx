@@ -25,6 +25,9 @@ const SOURCE_CONFIG: Record<string, { label: string; bg: string; text: string }>
   owid:         { label: 'OWID',   bg: 'bg-teal-600',               text: 'text-white' },
   worldbank:    { label: 'WB',     bg: 'bg-sky-700',                text: 'text-white' },
   gutenberg:    { label: 'BOOK',   bg: 'bg-amber-700',              text: 'text-white' },
+  sciencefacts: { label: 'FACT',   bg: 'bg-emerald-600',            text: 'text-white' },
+  xsum:         { label: 'BBC',    bg: 'bg-red-700',                text: 'text-white' },
+  nanowiki:     { label: 'WIKI+',  bg: 'bg-slate-600',             text: 'text-white' },
 };
 
 function formatScore(n: number) {
