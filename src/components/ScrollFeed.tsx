@@ -1,13 +1,29 @@
-import { useRef, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Dices } from 'lucide-react';
-import type { Article } from '../types';
 import { useAppStore } from '../store/useAppStore';
-import { useScrollFeed } from '../hooks/useScrollFeed';
-import { ScrollCard } from './ScrollCard';
-import { ScrollFeedSkeleton } from './ScrollFeedSkeleton';
+import { useArticleQueue } from '../hooks/useArticleQueue';
+import { ArticleCard } from './ArticleCard';
 import { DrawerMenu } from './DrawerMenu';
 import { MilestoneModal } from './MilestoneModal';
+
+function SkeletonFull() {
+  return (
+    <div className="fixed inset-0 bg-slate-50 dark:bg-navy-950 animate-pulse flex flex-col">
+      <div className="w-full h-[45vh] bg-slate-200 dark:bg-navy-800" />
+      <div className="flex-1 bg-white dark:bg-navy-950 rounded-t-[28px] px-5 pt-5 space-y-4">
+        <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded-full w-24" />
+        <div className="h-7 bg-slate-200 dark:bg-navy-800 rounded-xl w-full" />
+        <div className="h-7 bg-slate-200 dark:bg-navy-800 rounded-xl w-2/3" />
+        <div className="space-y-2 pt-2">
+          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-full" />
+          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-full" />
+          <div className="h-4 bg-slate-200 dark:bg-navy-800 rounded w-3/4" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ScrollFeed() {
   const {
@@ -19,95 +35,33 @@ export function ScrollFeed() {
     isMilestone,
   } = useAppStore();
 
-  const { articles, loadingInitial, loadingMore, loadMore, refresh } =
-    useScrollFeed(selectedInterests);
-
+  const { article, loading, error, advance } = useArticleQueue(selectedInterests);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
-  const [isPulling, setIsPulling] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const isFetchingMoreRef = useRef(false);
-  const pullStartY = useRef(0);
-
-  // Infinite scroll via IntersectionObserver
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || loadingInitial) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingMoreRef.current) {
-          isFetchingMoreRef.current = true;
-          loadMore();
-          setTimeout(() => {
-            isFetchingMoreRef.current = false;
-          }, 2000);
-        }
-      },
-      { root: null, rootMargin: '200px', threshold: 0 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loadingInitial, loadMore]);
-
-  // Pull-to-refresh touch handlers
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    function onTouchStart(e: TouchEvent) {
-      if (el!.scrollTop === 0) {
-        pullStartY.current = e.touches[0].clientY;
-      }
-    }
-
-    function onTouchMove(e: TouchEvent) {
-      if (el!.scrollTop === 0 && pullStartY.current > 0) {
-        const delta = e.touches[0].clientY - pullStartY.current;
-        if (delta > 50) setIsPulling(true);
-      }
-    }
-
-    async function onTouchEnd() {
-      if (isPulling) {
-        setIsPulling(false);
-        setRefreshing(true);
-        await refresh();
-        setRefreshing(false);
-      }
-      pullStartY.current = 0;
-    }
-
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: true });
-    el.addEventListener('touchend', onTouchEnd);
-
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [isPulling, refresh]);
-
-  function handleSave(article: Article) {
-    saveArticle(article);
-    addToHistory(article);
+  function doRoll() {
     const newCount = rollCount + 1;
     incrementRollCount();
     if (isMilestone(newCount)) setMilestoneCount(newCount);
+    advance();
   }
 
-  function handleSkip(article: Article) {
-    addToHistory(article);
+  function handleSave() {
+    if (article) {
+      saveArticle(article);
+      addToHistory(article);
+    }
+    doRoll();
+  }
+
+  function handleSkip() {
+    if (article) addToHistory(article);
+    doRoll();
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-50 dark:bg-navy-950 flex flex-col">
-      {/* Fixed header */}
+    <div className="fixed inset-0 bg-slate-50 dark:bg-navy-950">
+      {/* Floating header — same as swipe mode */}
       <div
         className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-5"
         style={{ paddingTop: 'max(20px, env(safe-area-inset-top))' }}
@@ -125,80 +79,58 @@ export function ScrollFeed() {
         <div className="w-10" />
       </div>
 
-      {/* Scrollable feed */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto"
-        style={{
-          paddingTop: '72px',
-          paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
-          overscrollBehavior: 'contain',
-        }}
-      >
-        {/* Pull-to-refresh indicator */}
-        <AnimatePresence>
-          {(isPulling || refreshing) && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center justify-center py-3"
+      {/* Single card — animates in/out as dice advances */}
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="skeleton"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <SkeletonFull />
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-slate-50 dark:bg-navy-950"
+          >
+            <p className="text-5xl mb-4">😅</p>
+            <h3 className="font-bold text-navy-900 dark:text-white mb-2 text-lg">
+              Couldn't connect
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+              Tap to try again.
+            </p>
+            <button
+              onClick={doRoll}
+              className="px-6 py-3 bg-navy-900 dark:bg-white text-white dark:text-navy-900 rounded-2xl font-bold text-sm"
             >
-              {refreshing ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                >
-                  <Dices size={20} className="text-slate-400" strokeWidth={1.5} />
-                </motion.div>
-              ) : (
-                <p className="text-sm text-slate-400">Release to refresh</p>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Initial skeleton */}
-        {loadingInitial && (
-          <div className="px-4 pt-2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <ScrollFeedSkeleton key={i} />
-            ))}
-          </div>
-        )}
-
-        {/* Articles */}
-        {!loadingInitial && (
-          <div className="px-4 pt-2">
-            {articles.map((article, i) => (
-              <ScrollCard
-                key={article.pageUrl}
-                article={article}
-                index={i}
-                onSave={handleSave}
-                onSkip={handleSkip}
-              />
-            ))}
-
-            {/* Load-more skeletons */}
-            {loadingMore && (
-              <div>
-                {[0, 1, 2].map((i) => (
-                  <ScrollFeedSkeleton key={`more-${i}`} />
-                ))}
-              </div>
-            )}
-
-            {/* Sentinel — triggers load-more */}
-            <div ref={sentinelRef} className="h-1" />
-          </div>
-        )}
-      </div>
+              Try again
+            </button>
+          </motion.div>
+        ) : article ? (
+          <motion.div key={article.pageUrl} className="fixed inset-0">
+            <ArticleCard
+              article={article}
+              onSkip={handleSkip}
+              onSave={handleSave}
+              onRoll={doRoll}
+              loading={loading}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {milestoneCount !== null && (
-        <MilestoneModal rollCount={milestoneCount} onDismiss={() => setMilestoneCount(null)} />
+        <MilestoneModal
+          rollCount={milestoneCount}
+          onDismiss={() => setMilestoneCount(null)}
+        />
       )}
     </div>
   );
