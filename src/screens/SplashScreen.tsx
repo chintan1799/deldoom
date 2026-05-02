@@ -47,7 +47,7 @@ export function SplashScreen() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="text-4xl font-black text-white tracking-tight"
         >
-          deldoom
+          Lore
         </motion.h1>
 
         <motion.p
@@ -56,7 +56,7 @@ export function SplashScreen() {
           transition={{ delay: 0.55, duration: 0.5 }}
           className="text-slate-400 text-base font-medium"
         >
-          learn something new every day
+          Knowledge with personality.
         </motion.p>
       </motion.div>
 

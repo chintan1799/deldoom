@@ -25,6 +25,9 @@ const SOURCE_CONFIG: Record<string, { label: string; bg: string; text: string }>
   owid:         { label: 'OWID',   bg: 'bg-teal-600',               text: 'text-white' },
   worldbank:    { label: 'WB',     bg: 'bg-sky-700',                text: 'text-white' },
   gutenberg:    { label: 'BOOK',   bg: 'bg-amber-700',              text: 'text-white' },
+  sciencefacts: { label: 'FACT',   bg: 'bg-emerald-600',            text: 'text-white' },
+  xsum:         { label: 'BBC',    bg: 'bg-red-700',                text: 'text-white' },
+  nanowiki:     { label: 'WIKI+',  bg: 'bg-slate-600',             text: 'text-white' },
 };
 
 function formatScore(n: number) {
@@ -46,11 +49,14 @@ export function ArticleCard({ article, onSkip, onSave, onRoll, loading = false }
   const skipOpacity  = useTransform(x, [-130, -60, 0], [1, 0.9, 0]);
   const controls     = useAnimation();
 
-  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
-    if (info.offset.x > 110) {
+  async function handleDragEnd(
+    _: unknown,
+    info: { offset: { x: number }; velocity: { x: number } }
+  ) {
+    if (info.offset.x > 110 || info.velocity.x > 400) {
       await controls.start({ x: 600, opacity: 0, transition: { duration: 0.28 } });
       onSave();
-    } else if (info.offset.x < -110) {
+    } else if (info.offset.x < -110 || info.velocity.x < -400) {
       await controls.start({ x: -600, opacity: 0, transition: { duration: 0.28 } });
       onSkip();
     } else {

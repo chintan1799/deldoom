@@ -9,7 +9,7 @@ import { ProgressDots } from '../components/ui/ProgressDots';
 import { useAppStore } from '../store/useAppStore';
 
 const MIN_INTERESTS = 3;
-const STEPS = 3;
+const STEPS = 4;
 
 const stepVariants = {
   enter: (dir: number) => ({
@@ -25,7 +25,8 @@ const stepVariants = {
 
 export function OnboardingScreen() {
   const navigate = useNavigate();
-  const { selectedInterests, toggleInterest, completeOnboarding } = useAppStore();
+  const { selectedInterests, toggleInterest, completeOnboarding, setFeedMode } =
+    useAppStore();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [search, setSearch] = useState('');
@@ -65,7 +66,7 @@ export function OnboardingScreen() {
           <div className="w-8 h-8 rounded-xl bg-navy-900 dark:bg-white flex items-center justify-center">
             <Dices size={16} className="text-white dark:text-navy-900" strokeWidth={1.8} />
           </div>
-          <span className="font-black text-xl text-navy-900 dark:text-white tracking-tight">deldoom</span>
+          <span className="font-black text-xl text-navy-900 dark:text-white tracking-tight">Lore</span>
         </div>
         <ProgressDots total={STEPS} current={step} />
       </div>
@@ -106,11 +107,11 @@ export function OnboardingScreen() {
                 transition={{ delay: 0.4 }}
                 className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed text-left max-w-xs"
               >
-                <span className="font-black italic text-navy-900 dark:text-white">deldoom</span>
+                <span className="font-black italic text-navy-900 dark:text-white">Lore</span>
                 {'  '}
-                <span className="text-slate-400 text-sm not-italic">/ del·doom /  verb</span>
+                <span className="text-slate-400 text-sm not-italic">/ lôr / noun</span>
                 <br /><br />
-                "the activity of gradually deleting doomscrolling from your life and taking control of your time, one nano-learning dice roll at a time. One roll. One idea. One goal: Pursuit of Knowledge."
+                "a body of knowledge and tradition passed down through curiosity. One idea at a time. One goal: the pursuit of knowledge."
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -149,7 +150,11 @@ export function OnboardingScreen() {
               {/* Search bar */}
               <div className="px-6 pb-3 shrink-0">
                 <div className="relative">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" strokeWidth={2} />
+                  <Search
+                    size={15}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    strokeWidth={2}
+                  />
                   <input
                     type="text"
                     placeholder="Search interests..."
@@ -177,7 +182,9 @@ export function OnboardingScreen() {
                     {INTEREST_GROUPS.map((group) => (
                       <button
                         key={group}
-                        onClick={() => setActiveGroup(activeGroup === group ? null : group)}
+                        onClick={() =>
+                          setActiveGroup(activeGroup === group ? null : group)
+                        }
                         className={`px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors min-h-[36px] ${
                           activeGroup === group
                             ? 'bg-navy-900 text-white dark:bg-white dark:text-navy-900'
@@ -220,7 +227,7 @@ export function OnboardingScreen() {
                 </motion.div>
               </div>
 
-              {/* Bottom CTA — sticky, respects safe area */}
+              {/* Bottom CTA */}
               <div
                 className="sticky bottom-0 left-0 right-0 px-6 py-5 bg-white/95 dark:bg-navy-950/95 backdrop-blur-xl border-t border-slate-100 dark:border-navy-800"
                 style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
@@ -235,9 +242,15 @@ export function OnboardingScreen() {
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className={`text-sm font-semibold ${canProceed ? 'text-navy-900 dark:text-white' : 'text-slate-400'}`}
+                      className={`text-sm font-semibold ${
+                        canProceed
+                          ? 'text-navy-900 dark:text-white'
+                          : 'text-slate-400'
+                      }`}
                     >
-                      {canProceed ? 'Ready!' : `${MIN_INTERESTS - selectedInterests.length} more to go`}
+                      {canProceed
+                        ? 'Ready!'
+                        : `${MIN_INTERESTS - selectedInterests.length} more to go`}
                     </motion.span>
                   )}
                 </div>
@@ -251,6 +264,89 @@ export function OnboardingScreen() {
           {step === 2 && (
             <motion.div
               key="step-2"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+              className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center"
+            >
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl font-black text-navy-900 dark:text-white mb-3"
+              >
+                How do you like to explore?
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-slate-500 dark:text-slate-400 text-sm mb-8"
+              >
+                You can change this anytime in Settings.
+              </motion.p>
+
+              <div className="w-full max-w-xs space-y-3">
+                {(
+                  [
+                    {
+                      mode: 'swipe' as const,
+                      emoji: '🃏',
+                      name: 'Swipe',
+                      desc: 'One card at a time. Swipe right to save, left to skip.',
+                    },
+                    {
+                      mode: 'scroll' as const,
+                      emoji: '📜',
+                      name: 'Scroll',
+                      desc: 'Browse a feed of articles. Tap to dive in.',
+                    },
+                  ] as const
+                ).map(({ mode, emoji, name, desc }, i) => (
+                  <motion.button
+                    key={mode}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: 0.2 + i * 0.15,
+                      type: 'spring',
+                      stiffness: 260,
+                      damping: 28,
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      setFeedMode(mode);
+                      setTimeout(() => go(3), 300);
+                    }}
+                    className="w-full text-left p-5 rounded-3xl border-2 border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-900 transition-colors active:border-navy-900 dark:active:border-white"
+                  >
+                    <div className="text-3xl mb-2">{emoji}</div>
+                    <div className="font-black text-lg text-navy-900 dark:text-white mb-1">
+                      {name}
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">{desc}</div>
+                  </motion.button>
+                ))}
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                onClick={() => go(1)}
+                className="mt-6 flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors min-h-[44px] px-3"
+              >
+                <ArrowLeft size={14} /> Edit interests
+              </motion.button>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div
+              key="step-3"
               custom={direction}
               variants={stepVariants}
               initial="enter"
@@ -282,8 +378,10 @@ export function OnboardingScreen() {
                 className="text-slate-500 dark:text-slate-400 text-base mb-4 leading-relaxed"
               >
                 We'll roll articles from your{' '}
-                <strong className="text-navy-900 dark:text-white">{selectedInterests.length} topics</strong>.
-                The more you explore, the better it gets.
+                <strong className="text-navy-900 dark:text-white">
+                  {selectedInterests.length} topics
+                </strong>
+                . The more you explore, the better it gets.
               </motion.p>
 
               {/* Selected interests preview */}
@@ -319,10 +417,10 @@ export function OnboardingScreen() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                onClick={() => go(1)}
+                onClick={() => go(2)}
                 className="mt-4 flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors min-h-[44px] px-3"
               >
-                <ArrowLeft size={14} /> Edit interests
+                <ArrowLeft size={14} /> Edit feed style
               </motion.button>
             </motion.div>
           )}

@@ -33,7 +33,8 @@ export interface Article {
   interestColor: string;
   readingTimeMin?: number;
   source?: 'wikipedia' | 'reddit' | 'hackernews' | 'techcrunch' | 'medium'
-         | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg';
+         | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg'
+         | 'sciencefacts' | 'xsum' | 'nanowiki';
   author?: string;
   publishedAt?: string;
   score?: number;

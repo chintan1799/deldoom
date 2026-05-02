@@ -65,7 +65,7 @@ export function DrawerMenu({ open, onClose }: DrawerMenuProps) {
                 <div className="w-8 h-8 rounded-xl bg-navy-900 dark:bg-white flex items-center justify-center">
                   <Dices size={16} className="text-white dark:text-navy-900" strokeWidth={1.8} />
                 </div>
-                <span className="font-black text-lg text-navy-900 dark:text-white tracking-tight">deldoom</span>
+                <span className="font-black text-lg text-navy-900 dark:text-white tracking-tight">Lore</span>
               </div>
               <button
                 onClick={onClose}

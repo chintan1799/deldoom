@@ -13,6 +13,7 @@ interface AppState {
   lastActiveDate: string | null;
   rollCount: number;
   darkMode: boolean;
+  feedMode: 'swipe' | 'scroll';
 }
 
 interface AppActions {
@@ -29,6 +30,7 @@ interface AppActions {
   incrementRollCount: () => void;
   isMilestone: (count: number) => boolean;
   toggleDarkMode: () => void;
+  setFeedMode: (mode: 'swipe' | 'scroll') => void;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -44,6 +46,7 @@ export const useAppStore = create<AppState & AppActions>()(
       lastActiveDate: null,
       rollCount: 0,
       darkMode: false,
+      feedMode: 'swipe',
 
       toggleInterest: (id) =>
         set((state) => ({
@@ -97,6 +100,8 @@ export const useAppStore = create<AppState & AppActions>()(
       toggleDarkMode: () =>
         set((state) => ({ darkMode: !state.darkMode })),
 
+      setFeedMode: (mode) => set({ feedMode: mode }),
+
       resetOnboarding: () =>
         set({ onboardingComplete: false, selectedInterests: [] }),
     }),
@@ -111,6 +116,7 @@ export const useAppStore = create<AppState & AppActions>()(
         lastActiveDate: state.lastActiveDate,
         rollCount: state.rollCount,
         darkMode: state.darkMode,
+        feedMode: state.feedMode,
       }),
     }
   )

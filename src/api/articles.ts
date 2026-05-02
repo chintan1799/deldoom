@@ -1,4 +1,4 @@
-import type { Article } from '../types';
+import type { Article, InterestCategory } from '../types';
 import { INTERESTS, getInterestById } from '../data/interests';
 import { fetchRandomArticleForInterests } from './wikipedia';
 import { fetchRedditArticle } from './reddit';
@@ -12,6 +12,9 @@ import { fetchStackExchangeArticle } from './stackexchange';
 import { fetchOwidArticle } from './ourworldindata';
 import { fetchWorldBankArticle } from './worldbank';
 import { fetchGutenbergArticle } from './gutenberg';
+import { fetchScienceFactArticle } from './sciencefacts';
+import { fetchXsumArticle } from './xsum';
+import { fetchNanoWikiArticle } from './nanowiki';
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -19,46 +22,91 @@ function pickRandom<T>(arr: T[]): T {
 
 type Source =
   | 'wikipedia' | 'reddit' | 'hackernews' | 'techcrunch' | 'medium'
-  | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg';
+  | 'arxiv' | 'nasa' | 'sep' | 'stackexchange' | 'owid' | 'worldbank' | 'gutenberg'
+  | 'sciencefacts' | 'xsum' | 'nanowiki';
 
-// Build a weighted source list for a given interest, then pick one randomly
-function pickSource(interestId: string): Source {
+const SCIENCEFACTS_INTERESTS = [
+  'physics', 'biology', 'chemistry', 'astronomy', 'medicine', 'neuroscience',
+  'psychology', 'mathematics', 'earth_science', 'climate', 'nutrition',
+  'evolution', 'genetics', 'ecology', 'space_tech', 'biotech',
+];
+
+const XSUM_INTERESTS = [
+  'politics', 'economics', 'sociology', 'finance', 'entrepreneurship',
+  'ai', 'coding', 'robotics', 'cybersecurity', 'climate', 'medicine',
+  'space_tech', 'internet', 'blockchain',
+];
+
+const NANOWIKI_INTERESTS = [
+  'history', 'philosophy', 'art', 'music', 'literature', 'linguistics',
+  'religion', 'geography', 'architecture', 'mythology', 'cooking',
+  'biology', 'physics', 'chemistry', 'astronomy', 'mathematics',
+  'psychology', 'economics', 'sociology',
+];
+
+function buildPool(interestId: string): [Source, number][] {
   const interest = getInterestById(interestId);
-  if (!interest) return 'wikipedia';
+  if (!interest) return [['wikipedia', 1]];
 
-  // Build pool of [source, weight] pairs based on which fields are configured
-  const pool: [Source, number][] = [['wikipedia', 25]];
+  // Wikipedia weight reduced to ~8 — roughly 10% of a full pool
+  // Non-wiki sources will be retried up to 3× before falling to Wikipedia
+  const pool: [Source, number][] = [['wikipedia', 8]];
 
-  if ((interest.redditSubs?.length ?? 0) > 0)       pool.push(['reddit', 15]);
-  if ((interest.hnTags?.length ?? 0) > 0)            pool.push(['hackernews', 8]);
-  if ((interest.mediumTags?.length ?? 0) > 0)        pool.push(['medium', 10]);
-  if ((interest.arxivCategories?.length ?? 0) > 0)   pool.push(['arxiv', 10]);
-  if (interest.stackExchangeSite)                     pool.push(['stackexchange', 6]);
-  if (interest.hasSep)                               pool.push(['sep', 6]);
-  if (interest.hasOwid)                              pool.push(['owid', 6]);
-  if (interest.gutenbergTopics?.length ?? 0 > 0)     pool.push(['gutenberg', 4]);
+  if ((interest.redditSubs?.length ?? 0) > 0)       pool.push(['reddit', 22]);
+  if ((interest.hnTags?.length ?? 0) > 0)            pool.push(['hackernews', 14]);
+  if ((interest.mediumTags?.length ?? 0) > 0)        pool.push(['medium', 14]);
+  if ((interest.arxivCategories?.length ?? 0) > 0)   pool.push(['arxiv', 14]);
+  if (interest.stackExchangeSite)                     pool.push(['stackexchange', 10]);
+  if (interest.hasSep)                               pool.push(['sep', 10]);
+  if (interest.hasOwid)                              pool.push(['owid', 10]);
+  if ((interest.gutenbergTopics?.length ?? 0) > 0)   pool.push(['gutenberg', 6]);
 
-  // NASA only for relevant interests
   const NASA_INTERESTS = ['astronomy', 'space_tech', 'earth_science', 'climate', 'physics'];
-  if (NASA_INTERESTS.includes(interestId))           pool.push(['nasa', 8]);
+  if (NASA_INTERESTS.includes(interestId))           pool.push(['nasa', 14]);
 
-  // TechCrunch only for tech/business interests
   const TC_INTERESTS = ['ai', 'coding', 'robotics', 'space_tech', 'cybersecurity',
     'gadgets', 'internet', 'blockchain', 'biotech', 'entrepreneurship', 'finance'];
-  if (TC_INTERESTS.includes(interestId))             pool.push(['techcrunch', 6]);
+  if (TC_INTERESTS.includes(interestId))             pool.push(['techcrunch', 12]);
 
-  // World Bank for economics-adjacent interests
   const WB_INTERESTS = ['economics', 'finance', 'politics', 'sociology', 'climate', 'medicine', 'nutrition'];
-  if (WB_INTERESTS.includes(interestId))             pool.push(['worldbank', 5]);
+  if (WB_INTERESTS.includes(interestId))             pool.push(['worldbank', 10]);
 
-  // Weighted random pick
+  // HuggingFace sources — highest weights for reliable diverse content
+  if (SCIENCEFACTS_INTERESTS.includes(interestId))   pool.push(['sciencefacts', 24]);
+  if (XSUM_INTERESTS.includes(interestId))            pool.push(['xsum', 22]);
+  if (NANOWIKI_INTERESTS.includes(interestId))        pool.push(['nanowiki', 18]);
+
+  return pool;
+}
+
+function pickFromPool(pool: [Source, number][]): Source {
   const total = pool.reduce((s, [, w]) => s + w, 0);
   let r = Math.random() * total;
   for (const [source, weight] of pool) {
     r -= weight;
     if (r <= 0) return source;
   }
-  return 'wikipedia';
+  return pool[pool.length - 1][0];
+}
+
+async function tryFetch(source: Source, interest: InterestCategory): Promise<Article | null> {
+  switch (source) {
+    case 'reddit':        return fetchRedditArticle(interest);
+    case 'hackernews':    return fetchHNArticle(interest);
+    case 'techcrunch':    return fetchTechCrunchArticle(interest);
+    case 'medium':        return fetchMediumArticle(interest);
+    case 'arxiv':         return fetchArxivArticle(interest);
+    case 'nasa':          return fetchNasaArticle(interest);
+    case 'sep':           return fetchSepArticle(interest);
+    case 'stackexchange': return fetchStackExchangeArticle(interest);
+    case 'owid':          return fetchOwidArticle(interest);
+    case 'worldbank':     return fetchWorldBankArticle(interest);
+    case 'gutenberg':     return fetchGutenbergArticle(interest);
+    case 'sciencefacts':  return fetchScienceFactArticle(interest);
+    case 'xsum':          return fetchXsumArticle(interest);
+    case 'nanowiki':      return fetchNanoWikiArticle(interest);
+    default:              return null;
+  }
 }
 
 export async function fetchRandomArticle(selectedInterestIds: string[]): Promise<Article> {
@@ -68,35 +116,38 @@ export async function fetchRandomArticle(selectedInterestIds: string[]): Promise
 
   if (!interest) return fetchRandomArticleForInterests(ids);
 
-  // Try chosen source, then fall back through a short chain, then Wikipedia
-  const source = pickSource(interestId);
+  const pool = buildPool(interestId);
 
-  const trySource = async (): Promise<Article | null> => {
-    switch (source) {
-      case 'reddit':        return fetchRedditArticle(interest);
-      case 'hackernews':    return fetchHNArticle(interest);
-      case 'techcrunch':    return fetchTechCrunchArticle(interest);
-      case 'medium':        return fetchMediumArticle(interest);
-      case 'arxiv':         return fetchArxivArticle(interest);
-      case 'nasa':          return fetchNasaArticle(interest);
-      case 'sep':           return fetchSepArticle(interest);
-      case 'stackexchange': return fetchStackExchangeArticle(interest);
-      case 'owid':          return fetchOwidArticle(interest);
-      case 'worldbank':     return fetchWorldBankArticle(interest);
-      case 'gutenberg':     return fetchGutenbergArticle(interest);
-      default:              return null;
-    }
-  };
-
-  if (source !== 'wikipedia') {
-    try {
-      const article = await trySource();
-      // Require non-empty extract
-      if (article && article.extract.trim().length > 80) return article;
-    } catch {
-      // fall through to Wikipedia
-    }
+  // First pick — includes wikipedia in the pool (~10% chance)
+  const firstSource = pickFromPool(pool);
+  if (firstSource === 'wikipedia') {
+    return fetchRandomArticleForInterests(ids);
   }
 
+  // Try firstSource, then up to 2 more distinct non-Wikipedia sources
+  const nonWikiPool = pool.filter(([s]) => s !== 'wikipedia');
+  const tried = new Set<Source>();
+  tried.add(firstSource);
+
+  const sourcesToTry: Source[] = [firstSource];
+  for (let i = 0; i < 2; i++) {
+    const remaining = nonWikiPool.filter(([s]) => !tried.has(s));
+    if (remaining.length === 0) break;
+    const next = pickFromPool(remaining);
+    tried.add(next);
+    sourcesToTry.push(next);
+  }
+
+  for (const source of sourcesToTry) {
+    try {
+      const article = await Promise.race([
+        tryFetch(source, interest),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 6000)),
+      ]);
+      if (article && article.extract.trim().length > 0) return article;
+    } catch { /* try next */ }
+  }
+
+  // All non-Wikipedia sources failed — fall back to Wikipedia
   return fetchRandomArticleForInterests(ids);
 }

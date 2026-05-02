@@ -2,6 +2,7 @@ import type { Article, InterestCategory } from '../types';
 
 interface RedditPost {
   data: {
+    id: string;
     title: string;
     selftext: string;
     url: string;
@@ -23,15 +24,31 @@ interface RedditListing {
   };
 }
 
+interface RedditCommentData {
+  body: string;
+  author: string;
+  score: number;
+}
+
+interface RedditCommentChild {
+  data: RedditCommentData;
+}
+
+interface RedditCommentListing {
+  data: {
+    children: RedditCommentChild[];
+  };
+}
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function formatExtract(post: RedditPost['data']): string {
-  if (post.selftext && post.selftext.replace(/\s/g, '').length > 100) {
+  if (post.selftext && post.selftext.replace(/\s/g, '').length > 30) {
     return post.selftext.slice(0, 500).replace(/\n+/g, ' ').trim();
   }
-  return '';
+  return post.is_self ? post.title : `${post.title} — via r/${post.subreddit}`;
 }
 
 function getThumbnail(post: RedditPost['data']): string | undefined {
@@ -53,7 +70,7 @@ export async function fetchRedditArticle(
       `https://www.reddit.com/r/${sub}/top.json?t=all&limit=100`,
       {
         headers: {
-          'User-Agent': 'deldoom/1.0 (microlearning app)',
+          'User-Agent': 'lore/1.0 (microlearning app)',
           Accept: 'application/json',
         },
       }
@@ -67,10 +84,8 @@ export async function fetchRedditArticle(
         (p) =>
           !p.stickied &&
           !p.over_18 &&
-          p.score > 50 &&
-          p.title.length > 15 &&
-          p.is_self &&
-          p.selftext.replace(/\s/g, '').length > 100
+          p.score > 10 &&
+          p.title.length > 15
       );
 
     if (posts.length === 0) return null;
@@ -78,7 +93,6 @@ export async function fetchRedditArticle(
     const post = pickRandom(posts);
     const extract = formatExtract(post);
 
-    // External URL: prefer the linked article; for self-posts use full Reddit thread
     const pageUrl = post.is_self
       ? `https://www.reddit.com${post.permalink}`
       : post.url;
@@ -101,6 +115,42 @@ export async function fetchRedditArticle(
       score: post.score,
       subreddit: `r/${post.subreddit}`,
     };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchRedditTopComment(
+  permalink: string
+): Promise<{ body: string; author: string; score: number } | null> {
+  try {
+    const res = await fetch(
+      `https://www.reddit.com${permalink}.json?sort=top&limit=5`,
+      {
+        headers: {
+          'User-Agent': 'lore/1.0 (microlearning app)',
+          Accept: 'application/json',
+        },
+      }
+    );
+    if (!res.ok) return null;
+
+    const data: [unknown, RedditCommentListing] = await res.json();
+    const comments = data[1]?.data?.children ?? [];
+    const top = comments
+      .map((c) => c.data)
+      .filter(
+        (c) =>
+          c.body &&
+          c.body !== '[deleted]' &&
+          c.body !== '[removed]' &&
+          c.author !== 'AutoModerator' &&
+          c.score > 5
+      )
+      .sort((a, b) => b.score - a.score)[0];
+
+    if (!top) return null;
+    return { body: top.body.slice(0, 400), author: top.author, score: top.score };
   } catch {
     return null;
   }
